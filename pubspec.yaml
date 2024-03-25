@@ -43,6 +43,9 @@ dev_dependencies:
   intl: ^0.17.0
   http: ^0.13.3
   email_validator: ^2.0.1 # Use the latest version compatible with your app
+  fl_chart: ^0.40.0
+  flutter_secure_storage: ^5.0.2
+
 
 
 

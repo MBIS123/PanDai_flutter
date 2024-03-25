@@ -37,11 +37,11 @@ class MyApp extends StatelessWidget {
         colorScheme: defaultColorScheme,
         primarySwatch: Colors.blue,
       ),
-      home:  MainWidget(),
+      home:  LoginPage(title: "login"),
       routes: {
         '/registerPage':(context) => RegisterPage(title: "Register UI"),
-        '/homePage':(context) => HomePage(title: "Home UI",),
-        '/budgetPage':(context)=> BudgetPage(title: "Budget UI")
+        // '/homePage':(context) => HomePage(title: "Home UI",),
+        // '/budgetPage':(context)=> BudgetPage(title: "Budget UI")
       },
     );
   }

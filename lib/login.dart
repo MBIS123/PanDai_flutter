@@ -4,6 +4,8 @@ import 'dart:convert';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:pandai_planner_flutter/register.dart';
+import 'package:pandai_planner_flutter/utilities/bottomNavigationWidget.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key, required this.title}) : super(key: key);
@@ -21,14 +23,37 @@ class _LoginPageState extends State<LoginPage> {
   var emailError = false;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final storage = FlutterSecureStorage();
 
+  @override
+  void initState() {
+    super.initState();
+    _checkCredentials();
+  }
+  Future<void> _checkCredentials() async {
+    final storedEmail = await storage.read(key: 'email');
+    final storedPassword = await storage.read(key: 'password');
+
+    if (storedEmail != null && storedPassword != null) {
+      _emailController.text = storedEmail;
+      _passwordController.text = storedPassword;
+      rememberValue = true;
+      _validateLogin(storedEmail, storedPassword, remember: true);
+    }
+  }
 
 //Future represent a task may not complete yet but will eventually produce a result
-  Future<void> _validateLogin(
-      String email, String password) async {
-
+  Future<void> _validateLogin(String email, String password, {bool remember = false}) async {
     final String apiUrl = 'http://10.0.2.2:8080/api/v1/users/login';
-    // Replace with your Spring Boot API endpoint URL
+    if (remember) {
+      await storage.write(key: 'email', value: email);
+      await storage.write(key: 'password', value: password);
+    } else {
+      if (!rememberValue) {
+        await storage.delete(key: 'email');
+        await storage.delete(key: 'password');
+      }
+    }
     print('Try to log in');
     final response = await http.post(
       Uri.parse(apiUrl),
@@ -47,12 +72,23 @@ class _LoginPageState extends State<LoginPage> {
       print('login successful');
       print('Response: ${response.body}');
 
+      // Parse the user ID from the response
+      final responseData = json.decode(response.body);
+      final userId = responseData['userId']; // Ensure that this is not null
 
+      print('not null la' + userId.toString());
 
       // Navigate to the home page after a short delay
+      // Navigate to MainWidget and pass userId
       Future.delayed(Duration(seconds: 2), () {
-        Navigator.pushReplacementNamed(context, '/homePage');
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MainWidget(userId: userId),
+          ),
+        );
       });
+
     } else {
       // Handle error or validation failures here
       final snackBar = SnackBar(
@@ -60,7 +96,6 @@ class _LoginPageState extends State<LoginPage> {
         duration: Duration(seconds: 2),
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
-
 
       setState(() {
         _successValidate = false;
@@ -77,7 +112,6 @@ class _LoginPageState extends State<LoginPage> {
       });
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -104,27 +138,25 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 children: [
                   TextFormField(
-                    validator: (value){
-                      if(EmailValidator.validate(value!)){
+                    validator: (value) {
+                      if (EmailValidator.validate(value!)) {
                         return null;
-
                       }
-                      if(_successValidate == false){
+                      if (_successValidate == false) {
                         return "Email was not registered";
-
-                      }
-                      else{
+                      } else {
                         return "Please enter a valid email";
                       }
-                      },
+                    },
                     maxLines: 1,
                     decoration: InputDecoration(
                       hintText: 'Enter your email',
-                      prefixIcon  : const Icon(Icons.email),
+                      prefixIcon: const Icon(Icons.email),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
+                    controller: _emailController,
                   ),
                   const SizedBox(
                     height: 20,
@@ -137,6 +169,7 @@ class _LoginPageState extends State<LoginPage> {
                       return null;
                     },
                     maxLines: 1,
+                    controller: _passwordController,
                     obscureText: true,
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.lock),
@@ -188,8 +221,7 @@ class _LoginPageState extends State<LoginPage> {
                       const Text('Not registered yet?'),
                       TextButton(
                         onPressed: () {
-                            Navigator.pushNamed(context, '/registerPage');
-
+                          Navigator.pushNamed(context, '/registerPage');
                         },
                         child: const Text('Create an account'),
                       ),
@@ -205,101 +237,32 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
+Future<void> _sendUserData(String email, String password) async {
+  final String apiUrl =
+      'http://10.0.2.2:8080/api/v1/users/login'; // Replace with your Spring Boot API endpoint URL
+
+  print('hellow1aaaaaaaaaaaaaaaaaaaaaaaaa');
+  final response = await http.post(
+    Uri.parse(apiUrl),
+    headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+    body: jsonEncode(<String, String>{
+      'email': email,
+      'password': password,
+    }),
+  );
+  print('hellow2bbbbbbbbbbbbbbbbbbbbbbb');
 
 
 
-// class LoginApp extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       home: LoginPage(),
-//     );
-//   }
-// }
-//
-// class LoginPage extends StatefulWidget {
-//   @override
-//   _LoginPageState createState() => _LoginPageState();
-// }
-//
-// class _LoginPageState extends State<LoginPage> {
-//   final TextEditingController _emailController = TextEditingController();
-//   final TextEditingController _passwordController = TextEditingController();
-//
-  Future<void> _sendUserData(String email, String password) async {
-
-    final String apiUrl = 'http://10.0.2.2:8080/api/v1/users/login'; // Replace with your Spring Boot API endpoint URL
-
-    print('hellow1aaaaaaaaaaaaaaaaaaaaaaaaa');
-    final response = await http.post(
-      Uri.parse(apiUrl),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, String>{
-        'email': email,
-        'password': password,
-      }),
-    );
-    print('hellow2bbbbbbbbbbbbbbbbbbbbbbb');
-
-    if (response.statusCode == 200) {
-      // Handle a successful response here
-      print('Login successful');
-      print('Response: ${response.body}');
-    } else {
-      // Handle error or validation failures here
-      print('Failed to log in. Status code: ${response.statusCode}');
-      print('Error response: ${response.body}');
-    }
+  if (response.statusCode == 200) {
+    // Handle a successful response here
+    print('Login successful');
+    print('Response: ${response.body}');
+  } else {
+    // Handle error or validation failures here
+    print('Failed to log in. Status code: ${response.statusCode}');
+    print('Error response: ${response.body}');
   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: Colors.purple,
-//       appBar: AppBar(
-//         backgroundColor: Colors.orange,
-//         title: Text('Login Page'),
-//       ),
-//       body: Padding(
-//         padding: EdgeInsets.all(16.0),
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: [
-//             TextField(
-//               controller: _emailController,
-//               decoration: InputDecoration(
-//                 labelText: 'Email',
-//               ),
-//             ),
-//             SizedBox(height: 16.0),
-//             TextField(
-//               controller: _passwordController,
-//               decoration: InputDecoration(
-//                 labelText: 'Password',
-//               ),
-//               obscureText: true, // Hide the password input
-//             ),
-//             SizedBox(height: 24.0),
-//             ElevatedButton(
-//               onPressed: () {
-//                 String email = _emailController.text;
-//                 String password = _passwordController.text;
-//
-//                 // Check if email and password are not empty
-//                 if (email.isNotEmpty && password.isNotEmpty) {
-//                   _sendUserData(email, password);
-//                   print('called sendUserData');
-//                 } else {
-//                   print('Email and password cannot be empty');
-//                 }
-//               },
-//               child: Text('Login'),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
+}

@@ -30,21 +30,28 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
     _checkCredentials();
   }
+
+
   Future<void> _checkCredentials() async {
+    print("checking the remember me");
     final storedEmail = await storage.read(key: 'email');
     final storedPassword = await storage.read(key: 'password');
+    print("the storedEmail was:" + storedEmail.toString());
 
     if (storedEmail != null && storedPassword != null) {
       _emailController.text = storedEmail;
       _passwordController.text = storedPassword;
       rememberValue = true;
       _validateLogin(storedEmail, storedPassword, remember: true);
+      print('storage store');
     }
   }
 
 //Future represent a task may not complete yet but will eventually produce a result
   Future<void> _validateLogin(String email, String password, {bool remember = false}) async {
     final String apiUrl = 'http://10.0.2.2:8080/api/v1/users/login';
+
+
     if (remember) {
       await storage.write(key: 'email', value: email);
       await storage.write(key: 'password', value: password);
@@ -88,7 +95,6 @@ class _LoginPageState extends State<LoginPage> {
           ),
         );
       });
-
     } else {
       // Handle error or validation failures here
       final snackBar = SnackBar(
@@ -96,7 +102,6 @@ class _LoginPageState extends State<LoginPage> {
         duration: Duration(seconds: 2),
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
-
       setState(() {
         _successValidate = false;
       });
@@ -187,6 +192,7 @@ class _LoginPageState extends State<LoginPage> {
                     onChanged: (newValue) {
                       setState(() {
                         rememberValue = newValue!;
+                        print("checkbox value is" + rememberValue.toString());
                       });
                     },
                     controlAffinity: ListTileControlAffinity.leading,
@@ -199,7 +205,7 @@ class _LoginPageState extends State<LoginPage> {
                       if (_formKey.currentState!.validate()) {
                         String email = _emailController.text;
                         String password = _passwordController.text;
-                        _validateLogin(email, password);
+                        _validateLogin(email, password , remember: rememberValue);
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -253,8 +259,6 @@ Future<void> _sendUserData(String email, String password) async {
     }),
   );
   print('hellow2bbbbbbbbbbbbbbbbbbbbbbb');
-
-
 
   if (response.statusCode == 200) {
     // Handle a successful response here

@@ -5,6 +5,9 @@ import 'package:pandai_planner_flutter/home_page.dart';
 import 'package:pandai_planner_flutter/register.dart';
 import 'package:pandai_planner_flutter/transaction_page.dart';
 
+import '../ai_planner.dart';
+import '../profile_page.dart';
+
 class MainWidget extends StatefulWidget {
 
   final int userId; // Change type if your userId is not an int
@@ -28,6 +31,9 @@ class _MainWidgetState extends State<MainWidget> {
       HomePage(title: 'Home', userId: widget.userId), // Pass userId to HomePage
       BudgetPage(title: 'Budget' ,userId: widget.userId),
       TransactionPage(title: 'Transaction', userId: widget.userId),
+      SmartPlanningPage(title: 'SmartPlanning', userId: widget.userId),
+      ProfilePage(title: 'Profile', userId: widget.userId),
+
       // Add more widgets as needed
     ];
   }
@@ -62,11 +68,11 @@ class _MainWidgetState extends State<MainWidget> {
           ),
           GButton(
             icon: Icons.account_balance,
-            text: "Analytic",
+            text: "Smart Plan",
           ),
           GButton(
-            icon: Icons.access_alarm,
-            text: "Profile",
+            icon: Icons.manage_accounts,
+            text: "Account",
           ),
         ],
       ),

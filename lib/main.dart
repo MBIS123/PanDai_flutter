@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:pandai_planner_flutter/budget.dart';
 import 'package:pandai_planner_flutter/home_page.dart';
 import 'package:pandai_planner_flutter/register.dart';
+import 'package:pandai_planner_flutter/transaction_page.dart';
+import 'package:pandai_planner_flutter/user_Data.dart';
 import 'package:pandai_planner_flutter/utilities/bottomNavigationWidget.dart';
 
 import 'login.dart';
@@ -33,6 +35,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
@@ -42,9 +45,26 @@ class MyApp extends StatelessWidget {
       home:  LoginPage(title: "login"),
       routes: {
         '/registerPage':(context) => RegisterPage(title: "Register UI"),
-        // '/homePage':(context) => HomePage(title: "Home UI",),
-        // '/budgetPage':(context)=> BudgetPage(title: "Budget UI")
+        '/HomePage':(context) => HomePage(title: "Home page" , userId: UserData().userId),
+
+        '/TransactionPage': (context) => TransactionPage(title: "Transaction UI", userId: UserData().userId),
+
+
       },
+
+    onGenerateRoute: (RouteSettings settings) {
+      if (settings.name == '/BudgetPage') {
+        final args = settings.arguments as Map<String,
+            dynamic>; // Cast the arguments to the correct type
+        return MaterialPageRoute(
+          builder: (context) =>
+              BudgetPage(
+                title: 'Budget',
+                userId: args['userId'], // Retrieve the userId from the arguments
+              ),
+        );
+      }
+    }
     );
   }
 }

@@ -24,6 +24,11 @@ class _BudgetPageState extends State<BudgetPage> {
   late final int actualUserId = widget.userId;
   List<BudgetInfo> budgetInfoList = []; // Initialize as an empty list
   late BudgetInfo? budgetInfo;
+  String _searchQuery = '';
+  TextEditingController _monthController = TextEditingController();
+  late double totalBudgetSpent = 0.00;
+  late double totalBudgetLimit =0.00;
+
 
   @override
   void initState() {
@@ -71,16 +76,30 @@ class _BudgetPageState extends State<BudgetPage> {
         name: 'Shopping',
         icon: Icons.shopping_cart,
         color: Colors.orange),
+    BudgetCategory(
+        id: 15,
+        name: 'Others',
+        icon: Icons.more_vert,
+        color: Colors.deepPurpleAccent),
   ];
+
+  List<BudgetCategory> getFilteredBudgetInfo() {
+    if (_searchQuery.isEmpty) {
+      return categories; // Return the whole list if there's no search query
+    }
+    return categories
+        .where((budgetCat) => budgetCat.name
+        .toLowerCase()
+        .contains(_searchQuery.toLowerCase()))
+        .toList(); // Return a filtered list based on the search query
+  }
 
   void showSetBudgetDialog(BuildContext context, BudgetCategory category) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        // Create a TextEditingController to capture the input from the TextField
         TextEditingController _budgetController = TextEditingController();
         String formattedDate = getFormattedDate(); // Call the method here
-
         return AlertDialog(
           title: Text('Create Budget'),
           content: Column(
@@ -139,18 +158,31 @@ class _BudgetPageState extends State<BudgetPage> {
             ),
             TextButton(
               child: Text('SET'),
-              onPressed: () {
-                print('Budget set to: ${_budgetController.text}');
-                double budgetLimit = double.tryParse(_budgetController.text) ??
-                    0.0; // Fallback to 0.0 if parsing fails
+              onPressed: () async {
+                try {
+                  print('Budget set to: ${_budgetController.text}');
+                  double budgetLimit = double.tryParse(_budgetController.text) ?? 0.0; // Fallback to 0.0 if parsing fails
+                  print('Budget set to:' + budgetLimit.toString());
 
-                DateTime budgetDate = DateTime.now();
+                  DateTime budgetDate = DateTime.now();
+                  String budgetCategory = category.name;
+                  print('UserID: ' + widget.userId.toString());
 
-                String budgetCategory = category.name;
-                print('UserID:' + widget.userId.toString());
-                _createBudget(
-                    widget.userId, budgetLimit, budgetCategory, budgetDate);
-                Navigator.of(context).pop(); // Close the dialog
+                  // Attempt to create the budget and refresh data
+                  await _createBudget(widget.userId, budgetLimit, budgetCategory, budgetDate);
+                  await _fetchBudgetData();
+
+                  // Use setState to trigger the UI update
+                  setState(() {
+                    print("doing refreshing");
+                  });
+                } catch (error) {
+                  // Handle any errors here
+                  print('An error occurred: $error');
+                } finally {
+                  // This block will execute no matter what and ensure the dialog is closed
+                  Navigator.of(context).pop(); // Close the dialog
+                }
               },
             ),
           ],
@@ -181,20 +213,18 @@ class _BudgetPageState extends State<BudgetPage> {
       // Handle a successful response here
       print('create budget successful');
       print('Response: ${response.body}');
-      Navigator.pushReplacementNamed(context, '/BudgetPage');
 
       final snackBar = SnackBar(
-        content: Text('Created budget successful!'),
+        content: Text('Updated budget successfully!'),
         duration: Duration(seconds: 2),
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
-
       // Navigate to the home page after a short delay
       Future.delayed(Duration(seconds: 2), () {
-        Navigator.pushReplacementNamed(context, '/homePage');
       });
     } else {
       // Handle error or validation failures here
+
       print('Failed to create budget. Status code: ${response.statusCode}');
       print('Error response: ${response.body}');
     }
@@ -206,28 +236,6 @@ class _BudgetPageState extends State<BudgetPage> {
     return formatter.format(now);
   }
 
-  // Future<void> _fetchBudgetData() async {
-  //   DateTime budgetDate = DateTime.now();
-  //
-  //   final String apiUrl =
-  //       'http://10.0.2.2:8080/api/v1/budget/budgetCurrentMonth'; // Adjust with your actual API URL
-  //   final response = await http.get(
-  //     Uri.parse('$apiUrl?userId=${widget.userId}'),
-  //     // Example category
-  //     headers: <String, String>{
-  //       'Content-Type': 'application/json; charset=UTF-8',
-  //     },
-  //   );
-  //
-  //   if (response.statusCode == 200 || response.statusCode == 201 ) {
-  //     print('response reeceived successfyully');
-  //     setState(() {
-  //       budgetInfo = BudgetInfo.fromJson(jsonDecode(response.body));
-  //     });
-  //   } else {
-  //     print('Failed to load budgetjhkjkh. Status code: ${response.statusCode} Status message: ${response.body}');
-  //   }
-  // }
   Future<void> _fetchBudgetData() async {
     final String apiUrl =
         'http://10.0.2.2:8080/api/v1/budget/budgetCurrentMonth';
@@ -245,6 +253,9 @@ class _BudgetPageState extends State<BudgetPage> {
           .toList();
       setState(() {
         budgetInfoList = budgetList;
+        totalBudgetLimit = budgetList.fold(0.0, (sum, item) => sum + item.budgetLimit);
+        totalBudgetSpent = budgetList.fold(0.0, (sum, item) => sum + item.budgetSpent);
+
       });
     } else {
       print('Failed to load budget. Status code: ${response.statusCode}');
@@ -252,33 +263,59 @@ class _BudgetPageState extends State<BudgetPage> {
     }
   }
 
+
+
   @override
   Widget build(BuildContext context) {
+
     if (budgetInfoList == null) {
       return Scaffold(
         appBar: AppBar(
           title: Text(widget.title),
         ),
         body: Center(
+
           child: CircularProgressIndicator(),
         ),
       );
     }
-
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
         actions: [
           IconButton(
             icon: Icon(Icons.add),
-            onPressed: () {
-              // Handle action (e.g., navigate to a new budget entry page)
-            },
+            onPressed: () {},
           ),
         ],
       ),
       body: Column(
         children: [
+
+
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), // Reduced vertical padding
+            child: TextField(
+              decoration: InputDecoration(
+                isDense: true, // Added to reduce the height
+                contentPadding: EdgeInsets.fromLTRB(12, 10, 12, 10), // Adjusted padding, less than the defaults
+                labelText: 'Search Budget Category',
+                hintText: 'Enter budget name',
+                prefixIcon: Icon(Icons.search, size: 20), // You can also reduce the icon size if needed
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                ),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
+            ),
+          ),
+
+
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Card(
@@ -297,7 +334,7 @@ class _BudgetPageState extends State<BudgetPage> {
                     // Replace with actual budget data
                     Text(
 //                      'Total Budget: \$${budgetInfo?.budgetLimit ?? 'N/A'}',
-                      'Total Budget: \$ 500',
+                      'Total Budget: RM${totalBudgetLimit}',
 
                       style: TextStyle(
                         fontSize: 16,
@@ -306,15 +343,14 @@ class _BudgetPageState extends State<BudgetPage> {
                     ),
                     Text(
 //                      'Total Budget: \$${budgetInfo?.budgetLimit ?? 'N/A'}',
-                      'Total Budget: \$ 500',
+                      'Total Budget Spend: RM${totalBudgetSpent}',
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.red,
                       ),
                     ),
                     LinearProgressIndicator(
-                      value: ( 0) /
-                          ( 1),
+                      value: (0) / (1),
                       backgroundColor: Colors.grey[300],
                       color: Colors.blue,
                     ),
@@ -323,72 +359,24 @@ class _BudgetPageState extends State<BudgetPage> {
               ),
             ),
           ),
-          // Expanded(
-          //   child: ListView.builder(
-          //     itemCount: categories.length,
-          //     itemBuilder: (context, index) {
-          //       var category = categories[index];
-          //       return Card(
-          //         margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-          //         child: Column(
-          //           children: [
-          //             ListTile(
-          //               leading: CircleAvatar(
-          //                 backgroundColor: category.color,
-          //                 child: Icon(
-          //                   category.icon,
-          //                   color: Colors.white,
-          //                 ),
-          //               ),
-          //               title: Text(
-          //                 category.name,
-          //                 style: TextStyle(fontWeight: FontWeight.bold),
-          //               ),
-          //               subtitle: Text('Spent this month: \$200'),
-          //               // Replace with actual data
-          //               trailing: ElevatedButton(
-          //                 onPressed: () =>
-          //                     showSetBudgetDialog(context, category),
-          //                 child: Text('Set Budget'),
-          //               ),
-          //             ),
-          //             Padding(
-          //               padding: EdgeInsets.symmetric(horizontal: 16.0),
-          //               child: LinearProgressIndicator(
-          //                 value: 1 / 500,
-          //                 // This is an example, replace with actual data
-          //                 backgroundColor: Colors.grey[300],
-          //                 color: Colors.blue,
-          //               ),
-          //             ),
-          //             SizedBox(height: 8),
-          //             // For some spacing after the progress bar
-          //           ],
-          //         ),
-          //       );
-          //     },
-          //   ),
-          // ), // original one
-
           Expanded(
             child: ListView.builder(
-              itemCount: categories.length,
+              itemCount: getFilteredBudgetInfo().length,
               itemBuilder: (context, index) {
-                var category = categories[index];
+                var category = getFilteredBudgetInfo()[index];
 
                 BudgetInfo defaultBudgetInfo = BudgetInfo(
                   budgetLimit: 0, // Default value for budget limit
                   budgetSpent: 0, // Default value for budget spent
-                  budgetCategory: category.name, // Use the category name from the current iteration
+                  budgetCategory: category.name
+                      , // Use the category name from the current iteration
                 );
 
                 BudgetInfo matchingBudget = budgetInfoList.firstWhere(
-                      (budgetInfo) => budgetInfo.budgetCategory == category.name,
-                  orElse: () => defaultBudgetInfo, // Return the default object if no match is found
+                  (budgetInfo) => budgetInfo.budgetCategory == category.name,
+                  orElse: () =>
+                      defaultBudgetInfo, // Return the default object if no match is found
                 );
-
-
-
 
                 // Define budget text based on whether a matching budget was found
                 String budgetText = matchingBudget != null
@@ -411,7 +399,30 @@ class _BudgetPageState extends State<BudgetPage> {
                           category.name,
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        subtitle: Text(budgetText), // Use the budgetText here
+                        subtitle: matchingBudget != null && matchingBudget != defaultBudgetInfo
+                            ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            RichText(
+                              text: TextSpan(
+                                style: TextStyle(fontSize: 14.0, color: Colors.white), // Adjusted for white text
+                                children: <TextSpan>[
+                                  TextSpan(text: 'Limit: ', style: TextStyle(color: Colors.blue)),
+                                  TextSpan(text: '\$${matchingBudget.budgetLimit.toStringAsFixed(2)} \n'),
+                                  TextSpan(text: 'Spent: ', style: TextStyle(color: Colors.red)),
+                                  TextSpan(text: '\$${matchingBudget.budgetSpent.toStringAsFixed(2)}'),
+                                ],
+                              ),
+                            ),
+                            // Conditionally display "Overspend" text
+                            if (matchingBudget.budgetSpent > matchingBudget.budgetLimit)
+                              Text(
+                                'Overspent',
+                                style: TextStyle(color: Colors.red, fontSize: 12), // Small red text
+                              ),
+                          ],
+                        )
+                            : Text('No budget set', style: TextStyle(color: Colors.white)), // Ensure default text is also white
                         trailing: ElevatedButton(
                           onPressed: () => showSetBudgetDialog(context, category),
                           child: Text('Set Budget'),
@@ -422,11 +433,12 @@ class _BudgetPageState extends State<BudgetPage> {
                         child: LinearProgressIndicator(
                           value: matchingBudget.budgetLimit > 0
                               ? matchingBudget.budgetSpent / matchingBudget.budgetLimit
-                              : 0, // Fallback to 0 if the budgetLimit is 0 to avoid division by zero
+                              : 0,
                           backgroundColor: Colors.grey[300],
-                          color: Colors.blue,
+                          color: matchingBudget.budgetSpent > matchingBudget.budgetLimit
+                              ? Colors.red // Change to red if overspent
+                              : Colors.blue, // Default color
                         ),
-
                       ),
                       SizedBox(height: 8),
                     ],
@@ -435,48 +447,6 @@ class _BudgetPageState extends State<BudgetPage> {
               },
             ),
           ),
-
-
-          // Expanded(
-          //   child: ListView.builder(
-          //     itemCount: budgetInfoList.length, // Use the length of budgetInfoList
-          //     itemBuilder: (context, index) {
-          //       var budgetInfo = budgetInfoList[index]; // Get current BudgetInfo
-          //       return Card(
-          //         margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-          //         child: Column(
-          //           children: [
-          //             ListTile(
-          //               leading: CircleAvatar(
-          //                 backgroundColor: Colors.grey, // Consider dynamic color or icons based on category
-          //                 child: Text("\$"), // Placeholder icon, consider changing based on category
-          //               ),
-          //               title: Text(
-          //                 budgetInfo.budgetCategory, // Display the budget category
-          //                 style: TextStyle(fontWeight: FontWeight.bold),
-          //               ),
-          //               subtitle: Text('Limit: \$${budgetInfo.budgetLimit.toStringAsFixed(2)}'), // Display the budget limit
-          //               trailing: Text(
-          //                 'Spent: \$${budgetInfo.budgetSpent.toStringAsFixed(2)}', // Display the budget spent
-          //               ),
-          //             ),
-          //             Padding(
-          //               padding: EdgeInsets.symmetric(horizontal: 16.0),
-          //               child: LinearProgressIndicator(
-          //                 value: budgetInfo.budgetSpent / budgetInfo.budgetLimit, // Calculate progress
-          //                 backgroundColor: Colors.grey[300],
-          //                 color: Colors.blue, // Consider changing color based on progress
-          //               ),
-          //             ),
-          //             SizedBox(height: 8),
-          //           ],
-          //         ),
-          //       );
-          //     },
-          //   ),
-          // ),
-
-
         ],
       ),
     );

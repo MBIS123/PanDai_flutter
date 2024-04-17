@@ -4,44 +4,42 @@ import 'package:pandai_planner_flutter/budget.dart';
 import 'package:pandai_planner_flutter/home_page.dart';
 import 'package:pandai_planner_flutter/register.dart';
 import 'package:pandai_planner_flutter/transaction_page.dart';
-
 import '../ai_planner.dart';
 import '../profile_page.dart';
 
-class MainWidget extends StatefulWidget {
+class BottomWidget extends StatefulWidget {
 
-  final int userId; // Change type if your userId is not an int
-
-  const MainWidget({Key? key, required this.userId}) : super(key: key);
+  final int userId;
+  const BottomWidget({Key? key, required this.userId}) : super(key: key);
 
   @override
-  _MainWidgetState createState() => _MainWidgetState();
+  _BottomWidgetState createState() => _BottomWidgetState();
+
 
 }
 
-class _MainWidgetState extends State<MainWidget> {
+class _BottomWidgetState extends State<BottomWidget> {
   int _selectedIndex = 0;
-  late List<Widget> _widgetOptions; // Make it a late non-static list
+  late List<Widget> _widgetOptions;
 
   @override
   void initState() {
     super.initState();
-    // Initialize your widget options here
     _widgetOptions = <Widget>[
-      HomePage(title: 'Home', userId: widget.userId), // Pass userId to HomePage
-      BudgetPage(title: 'Budget' ,userId: widget.userId),
+      HomePage(title: 'Home', userId: widget.userId),
+      BudgetPage(title: 'Budget', userId: widget.userId),
       TransactionPage(title: 'Transaction', userId: widget.userId),
       SmartPlanningPage(title: 'SmartPlanning', userId: widget.userId),
       ProfilePage(title: 'Profile', userId: widget.userId),
-
-      // Add more widgets as needed
     ];
   }
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    if (index != _selectedIndex) {  // Add this check to see if the tab is already selected
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
   }
 
   @override
@@ -50,32 +48,35 @@ class _MainWidgetState extends State<MainWidget> {
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
       ),
-      bottomNavigationBar: GNav(
-        selectedIndex: _selectedIndex,
-        onTabChange: _onItemTapped,
-        tabs: const [
-          GButton(
-            icon: Icons.home,
-            text: 'Home',
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        type: BottomNavigationBarType.fixed, // Set to fixed for more than 3 items
+        items: <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
           ),
-          GButton(
-            icon: Icons.wallet_giftcard,
-            text: "Budget",
+          BottomNavigationBarItem(
+            icon: Icon(Icons.wallet_giftcard),
+            label: 'Budget',
           ),
-          GButton(
-            icon: Icons.add,
-            text: "Transaction",
+          BottomNavigationBarItem(
+            icon: Icon(Icons.add),
+            label: 'Transaction',
           ),
-          GButton(
-            icon: Icons.account_balance,
-            text: "Smart Plan",
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_balance),
+            label: 'Smart Plan',
           ),
-          GButton(
-            icon: Icons.manage_accounts,
-            text: "Account",
+          BottomNavigationBarItem(
+            icon: Icon(Icons.manage_accounts),
+            label: 'Account',
           ),
         ],
       ),
     );
   }
+
+
 }

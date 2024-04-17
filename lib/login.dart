@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:pandai_planner_flutter/register.dart';
+import 'package:pandai_planner_flutter/user_data.dart';
 import 'package:pandai_planner_flutter/utilities/bottomNavigationWidget.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -47,21 +48,8 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-//Future represent a task may not complete yet but will eventually produce a result
   Future<void> _validateLogin(String email, String password, {bool remember = false}) async {
     final String apiUrl = 'http://10.0.2.2:8080/api/v1/users/login';
-
-
-    if (remember) {
-      await storage.write(key: 'email', value: email);
-      await storage.write(key: 'password', value: password);
-    } else {
-      if (!rememberValue) {
-        await storage.delete(key: 'email');
-        await storage.delete(key: 'password');
-      }
-    }
-    print('Try to log in');
     final response = await http.post(
       Uri.parse(apiUrl),
       headers: <String, String>{
@@ -72,26 +60,23 @@ class _LoginPageState extends State<LoginPage> {
         'password': password,
       }),
     );
-    print('Request posted');
 
     if (response.statusCode == 201 || response.statusCode == 200) {
-      // Handle a successful response here
-      print('login successful');
-      print('Response: ${response.body}');
-
-      // Parse the user ID from the response
       final responseData = json.decode(response.body);
-      final userId = responseData['userId']; // Ensure that this is not null
+      final userId = responseData['userId'];
 
-      print('not null la' + userId.toString());
+      if (remember) {
+        await storage.write(key: 'email', value: email);
+        await storage.write(key: 'password', value: password);
+      }
 
-      // Navigate to the home page after a short delay
-      // Navigate to MainWidget and pass userId
+      UserData().setUserId(userId);
+
       Future.delayed(Duration(seconds: 2), () {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => MainWidget(userId: userId),
+            builder: (context) => BottomWidget(userId: userId),
           ),
         );
       });
@@ -105,23 +90,18 @@ class _LoginPageState extends State<LoginPage> {
       setState(() {
         _successValidate = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-      print(_successValidate);
       print('Failed to log in. Status code: ${response.statusCode}');
       print('Error response: ${response.body}');
     }
-    if (response.statusCode == 500) {
-      setState(() {
-        // Set some state in your widget to display the error
-        emailError = true;
-      });
-    }
   }
+
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
+      bottomNavigationBar: BottomWidget(userId: 2),
       body: Container(
         padding: const EdgeInsets.all(20),
         child: Column(

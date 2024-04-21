@@ -8,6 +8,70 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'model/budget_info.dart'; // Import services for TextInputFormatter
+import 'package:flutter/material.dart';
+class MonthSwitcher extends StatefulWidget {
+  final DateTime initialDate;
+  final Function(DateTime) onMonthChanged;
+
+  const MonthSwitcher({
+    Key? key,
+    required this.initialDate,
+    required this.onMonthChanged,
+  }) : super(key: key);
+
+  @override
+  _MonthSwitcherState createState() => _MonthSwitcherState();
+}
+
+class _MonthSwitcherState extends State<MonthSwitcher> {
+  late DateTime currentDate;
+
+  @override
+  void initState() {
+    super.initState();
+    currentDate = widget.initialDate;
+  }
+
+  void _nextMonth() {
+    setState(() {
+      currentDate = DateTime(currentDate.year, currentDate.month + 1, 1);
+      widget.onMonthChanged(currentDate);
+    });
+  }
+
+  void _previousMonth() {
+    setState(() {
+      currentDate = DateTime(currentDate.year, currentDate.month - 1, 1);
+      widget.onMonthChanged(currentDate);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        IconButton(
+          icon: const Icon(Icons.arrow_back_ios),
+          onPressed: _previousMonth,
+        ),
+        Text(
+          DateFormat('MMMM yyyy').format(currentDate),
+          style: Theme.of(context).textTheme.headline6,
+        ),
+        IconButton(
+          icon: const Icon(Icons.arrow_forward_ios),
+          onPressed: _nextMonth,
+        ),
+      ],
+    );
+  }
+}
+
+
+
+
+
 
 class BudgetPage extends StatefulWidget {
   const BudgetPage({Key? key, required this.title, required this.userId})
@@ -28,12 +92,15 @@ class _BudgetPageState extends State<BudgetPage> {
   TextEditingController _monthController = TextEditingController();
   late double totalBudgetSpent = 0.00;
   late double totalBudgetLimit =0.00;
+  DateTime selectedMonth = DateTime.now();
+
 
 
   @override
   void initState() {
     super.initState();
-    _fetchBudgetData();
+    _fetchBudgetData(selectedMonth);
+
   }
 
   final List<BudgetCategory> categories = [
@@ -84,14 +151,24 @@ class _BudgetPageState extends State<BudgetPage> {
   ];
 
   List<BudgetCategory> getFilteredBudgetInfo() {
-    if (_searchQuery.isEmpty) {
-      return categories; // Return the whole list if there's no search query
+    var filtered = categories
+        .where((budgetCat) => budgetCat.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .toList();
+
+    List<BudgetCategory> filled = [];
+    List<BudgetCategory> unfilled = [];
+
+    for (var category in filtered) {
+      var hasBudget = budgetInfoList.any((info) =>
+      info.budgetCategory == category.name && info.budgetLimit > 0);
+      if (hasBudget) {
+        filled.add(category);
+      } else {
+        unfilled.add(category);
+      }
     }
-    return categories
-        .where((budgetCat) => budgetCat.name
-        .toLowerCase()
-        .contains(_searchQuery.toLowerCase()))
-        .toList(); // Return a filtered list based on the search query
+
+    return filled + unfilled; // Concatenate filled first, then unfilled
   }
 
   void showSetBudgetDialog(BuildContext context, BudgetCategory category) {
@@ -170,7 +247,7 @@ class _BudgetPageState extends State<BudgetPage> {
 
                   // Attempt to create the budget and refresh data
                   await _createBudget(widget.userId, budgetLimit, budgetCategory, budgetDate);
-                  await _fetchBudgetData();
+                  await _fetchBudgetData(selectedMonth);
 
                   // Use setState to trigger the UI update
                   setState(() {
@@ -236,11 +313,16 @@ class _BudgetPageState extends State<BudgetPage> {
     return formatter.format(now);
   }
 
-  Future<void> _fetchBudgetData() async {
+  Future<void> _fetchBudgetData(DateTime month) async {
     final String apiUrl =
         'http://10.0.2.2:8080/api/v1/budget/budgetCurrentMonth';
+
+    // Extract year and month from the DateTime object
+    int year = month.year;
+    int monthNumber = month.month;
+
     final response = await http.get(
-      Uri.parse('$apiUrl?userId=${widget.userId}'),
+      Uri.parse('$apiUrl?userId=${widget.userId}&year=$year&month=$monthNumber'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -255,7 +337,6 @@ class _BudgetPageState extends State<BudgetPage> {
         budgetInfoList = budgetList;
         totalBudgetLimit = budgetList.fold(0.0, (sum, item) => sum + item.budgetLimit);
         totalBudgetSpent = budgetList.fold(0.0, (sum, item) => sum + item.budgetSpent);
-
       });
     } else {
       print('Failed to load budget. Status code: ${response.statusCode}');
@@ -265,8 +346,13 @@ class _BudgetPageState extends State<BudgetPage> {
 
 
 
+
+
+
   @override
   Widget build(BuildContext context) {
+    List<BudgetCategory> filteredBudgetInfo = getFilteredBudgetInfo();
+    bool foundUnfilled = false;
 
     if (budgetInfoList == null) {
       return Scaffold(
@@ -274,7 +360,6 @@ class _BudgetPageState extends State<BudgetPage> {
           title: Text(widget.title),
         ),
         body: Center(
-
           child: CircularProgressIndicator(),
         ),
       );
@@ -291,9 +376,15 @@ class _BudgetPageState extends State<BudgetPage> {
       ),
       body: Column(
         children: [
-
-
-
+          MonthSwitcher(
+            initialDate: selectedMonth,
+            onMonthChanged: (DateTime newMonth) {
+              setState(() {
+                selectedMonth = newMonth;
+              });
+              _fetchBudgetData(selectedMonth);
+            },
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), // Reduced vertical padding
             child: TextField(
@@ -359,91 +450,39 @@ class _BudgetPageState extends State<BudgetPage> {
               ),
             ),
           ),
+
+
           Expanded(
             child: ListView.builder(
-              itemCount: getFilteredBudgetInfo().length,
+              itemCount: filteredBudgetInfo.length,
               itemBuilder: (context, index) {
-                var category = getFilteredBudgetInfo()[index];
-
+                var category = filteredBudgetInfo[index];
                 BudgetInfo defaultBudgetInfo = BudgetInfo(
-                  budgetLimit: 0, // Default value for budget limit
-                  budgetSpent: 0, // Default value for budget spent
-                  budgetCategory: category.name
-                      , // Use the category name from the current iteration
+                  budgetLimit: 0,  // Default value for budget limit
+                  budgetSpent: 0,  // Default value for budget spent
+                  budgetCategory: category.name,
                 );
 
                 BudgetInfo matchingBudget = budgetInfoList.firstWhere(
-                  (budgetInfo) => budgetInfo.budgetCategory == category.name,
-                  orElse: () =>
-                      defaultBudgetInfo, // Return the default object if no match is found
+                      (info) => info.budgetCategory == category.name,
+                  orElse: () => defaultBudgetInfo,
                 );
 
-                // Define budget text based on whether a matching budget was found
-                String budgetText = matchingBudget != null
-                    ? 'Limit: \$${matchingBudget.budgetLimit.toStringAsFixed(2)} Spent: \$${matchingBudget.budgetSpent.toStringAsFixed(2)}'
-                    : 'No budget set';
-
-                return Card(
-                  margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                  child: Column(
+                bool isFilled = matchingBudget.budgetLimit > 0;
+                if (!isFilled && !foundUnfilled) {
+                  foundUnfilled = true; // We've now found the first unfilled item
+                  return Column(
                     children: [
-                      ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: category.color,
-                          child: Icon(
-                            category.icon,
-                            color: Colors.white,
-                          ),
-                        ),
-                        title: Text(
-                          category.name,
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: matchingBudget != null && matchingBudget != defaultBudgetInfo
-                            ? Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            RichText(
-                              text: TextSpan(
-                                style: TextStyle(fontSize: 14.0, color: Colors.white), // Adjusted for white text
-                                children: <TextSpan>[
-                                  TextSpan(text: 'Limit: ', style: TextStyle(color: Colors.blue)),
-                                  TextSpan(text: '\$${matchingBudget.budgetLimit.toStringAsFixed(2)} \n'),
-                                  TextSpan(text: 'Spent: ', style: TextStyle(color: Colors.red)),
-                                  TextSpan(text: '\$${matchingBudget.budgetSpent.toStringAsFixed(2)}'),
-                                ],
-                              ),
-                            ),
-                            // Conditionally display "Overspend" text
-                            if (matchingBudget.budgetSpent > matchingBudget.budgetLimit)
-                              Text(
-                                'Overspent',
-                                style: TextStyle(color: Colors.red, fontSize: 12), // Small red text
-                              ),
-                          ],
-                        )
-                            : Text('No budget set', style: TextStyle(color: Colors.white)), // Ensure default text is also white
-                        trailing: ElevatedButton(
-                          onPressed: () => showSetBudgetDialog(context, category),
-                          child: Text('Set Budget'),
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16.0),
-                        child: LinearProgressIndicator(
-                          value: matchingBudget.budgetLimit > 0
-                              ? matchingBudget.budgetSpent / matchingBudget.budgetLimit
-                              : 0,
-                          backgroundColor: Colors.grey[300],
-                          color: matchingBudget.budgetSpent > matchingBudget.budgetLimit
-                              ? Colors.red // Change to red if overspent
-                              : Colors.blue, // Default color
-                        ),
-                      ),
-                      SizedBox(height: 8),
+                      SizedBox(height: 20),
+                      Divider(height: 40, thickness: 2, color: Colors.grey),
+
+                      Text('Unassigned Budget Categories', style: TextStyle(color: Colors.purple, fontSize: 16)),
+                      SizedBox(height: 20),
+                      budgetCategoryItem(matchingBudget, category),
                     ],
-                  ),
-                );
+                  );
+                }
+                return budgetCategoryItem(matchingBudget, category);
               },
             ),
           ),
@@ -451,4 +490,53 @@ class _BudgetPageState extends State<BudgetPage> {
       ),
     );
   }
+
+  Widget budgetCategoryItem(BudgetInfo matchingBudget, BudgetCategory category) {
+    return Card(
+      margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+      child: Column(
+        children: [
+          ListTile(
+            leading: CircleAvatar(
+              backgroundColor: category.color,
+              child: Icon(category.icon, color: Colors.white),
+            ),
+            title: Text(category.name, style: TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: matchingBudget.budgetLimit > 0 ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                RichText(
+                  text: TextSpan(
+                    style: TextStyle(fontSize: 14.0, color: Colors.white),
+                    children: [
+                      TextSpan(text: 'Limit: \$${matchingBudget.budgetLimit.toStringAsFixed(2)}\n'),
+                      TextSpan(text: 'Spent: \$${matchingBudget.budgetSpent.toStringAsFixed(2)}', style: TextStyle(color: Colors.red)),
+                    ],
+                  ),
+                ),
+                if (matchingBudget.budgetSpent > matchingBudget.budgetLimit)
+                  Text('Overspent', style: TextStyle(color: Colors.red, fontSize: 12)),
+              ],
+            ) : Text('No budget set'),
+            trailing: ElevatedButton(
+              onPressed: () => showSetBudgetDialog(context, category),
+              child: Text('Set Budget'),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            child: LinearProgressIndicator(
+              value: matchingBudget.budgetLimit > 0 ? matchingBudget.budgetSpent / matchingBudget.budgetLimit : 0,
+              backgroundColor: Colors.grey[300],
+              color: matchingBudget.budgetSpent > matchingBudget.budgetLimit ? Colors.red : Colors.blue,
+            ),
+          ),
+          SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+
+
+
 }

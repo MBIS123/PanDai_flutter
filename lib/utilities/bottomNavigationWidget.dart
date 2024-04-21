@@ -5,6 +5,7 @@ import 'package:pandai_planner_flutter/home_page.dart';
 import 'package:pandai_planner_flutter/register.dart';
 import 'package:pandai_planner_flutter/transaction_page.dart';
 import '../ai_planner.dart';
+import '../main.dart';
 import '../profile_page.dart';
 
 class BottomWidget extends StatefulWidget {
@@ -49,10 +50,12 @@ class _BottomWidgetState extends State<BottomWidget> {
         child: _widgetOptions.elementAt(_selectedIndex),
       ),
       bottomNavigationBar: BottomNavigationBar(
+        selectedItemColor:  defaultColorScheme.primary, // Set the text color to the primary color from the default color scheme
+
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed, // Set to fixed for more than 3 items
-        items: <BottomNavigationBarItem>[
+        items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Home',

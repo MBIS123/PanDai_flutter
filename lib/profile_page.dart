@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -43,9 +42,15 @@ class _ProfilePageState extends State<ProfilePage> {
                 backgroundImage: NetworkImage('https://via.placeholder.com/150'), // Placeholder image, replace with actual image URL
               ),
               SizedBox(height: 16),
-              Text(
-                customerName,
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              GestureDetector(
+                onTap: () {
+                  // Navigate to income details page
+                  // Navigator.of(context).push();
+                },
+                child: Text(
+                  customerName,
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
               ),
               Divider(height: 32, thickness: 2),
               InformationTile(
@@ -62,6 +67,96 @@ class _ProfilePageState extends State<ProfilePage> {
                 icon: Icons.account_circle_outlined,
                 label: 'Account',
                 value: accountDetails,
+              ),
+              InformationTile(
+                icon: Icons.monetization_on_outlined,
+                label: 'Other Income',
+                value: accountDetails,
+              ),
+              // Divider to visually separate sections
+              Divider(height: 32, thickness: 2),
+              // Added Manage Categories section
+              ListTile(
+                leading: Icon(Icons.category_outlined),
+                title: Text('Manage Categories', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+                trailing: Icon(Icons.chevron_right),
+                onTap: () {
+                  // Navigate to Manage Categories Page
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      // Start with a variable to hold the category name
+                      String categoryName = '';
+
+                      // The AlertDialog
+                      return AlertDialog(
+                        title: Text('Add new category'),
+                        content: SingleChildScrollView(
+                          child: ListBody(
+                            children: <Widget>[
+                              // Type toggle switch or segment control
+                              // For simplicity, I'll just add text, you can replace it with a Toggle or SegmentControl
+                              Text('Type: INCOME / EXPENSE'),
+
+                              // TextField for the category name
+                              TextField(
+                                autofocus: true,
+                                decoration: InputDecoration(
+                                  hintText: 'Name',
+                                ),
+                                onChanged: (value) {
+                                  categoryName = value; // update the category name
+                                },
+                              ),
+
+                              // Icons wrap in a GridView or a horizontal ListView
+                              // I'll show a simplified version using Wrap for layout
+                              Wrap(
+                                spacing: 8.0, // gap between adjacent chips
+                                runSpacing: 4.0, // gap between lines
+                                children: <Widget>[
+                                  // ...Add your IconButtons or other widgets here...
+                                  // Just an example icon to tap
+                                  IconButton(
+                                    icon: Icon(Icons.home),
+                                    onPressed: () {
+                                      // Set the selected icon for the category here
+                                    },
+                                  ),
+                                  // Repeat for other icons...
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        actions: <Widget>[
+                          TextButton(
+                            child: Text('CANCEL'),
+                            onPressed: () {
+                              Navigator.of(context).pop(); // Dismiss the dialog
+                            },
+                          ),
+                          TextButton(
+                            child: Text('SAVE'),
+                            onPressed: () {
+                              // Save the new category here
+                              // For example, call a setState and add the new category to a list
+                              Navigator.of(context).pop(); // Dismiss the dialog
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+              ),
+              // Added Logout button
+              ElevatedButton(
+                onPressed: () {
+                  // Navigate back to login page
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                },
+                child: Text('Logout'),
               ),
               // ... Add more information tiles as needed ...
             ],
@@ -99,4 +194,10 @@ class InformationTile extends StatelessWidget {
       ),
     );
   }
+}
+
+void main() {
+  runApp(MaterialApp(
+    home: ProfilePage(title: 'Profile', userId: 123),
+  ));
 }

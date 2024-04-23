@@ -29,7 +29,7 @@ class _BottomWidgetState extends State<BottomWidget> {
     _widgetOptions = <Widget>[
       HomePage(title: 'Home', userId: widget.userId),
       BudgetPage(title: 'Budget', userId: widget.userId),
-      TransactionPage(title: 'Transaction', userId: widget.userId),
+      ViewTransactionPage(title: 'Transaction History', userId: widget.userId, fetchTransactionData: () {  },),
       SmartPlanningPage(title: 'SmartPlanning', userId: widget.userId),
       ProfilePage(title: 'Profile', userId: widget.userId),
     ];

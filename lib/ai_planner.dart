@@ -8,7 +8,7 @@ import 'package:pandai_planner_flutter/services/api_service.dart';
 
 import 'login.dart';
 import 'main.dart';
-import 'model/FinancialPlan.dart';
+import 'model/financial_plan.dart';
 
 class SmartPlanningPage extends StatefulWidget {
   final String title;
@@ -22,7 +22,7 @@ class SmartPlanningPage extends StatefulWidget {
 }
 
 class _SmartPlanningPageState extends State<SmartPlanningPage> {
-  List<FinancialPlan> financialPlans = []; // Assuming this list holds existing financial plans
+  List<FinancialPlan> financialPlans = [];
 
   @override
   Widget build(BuildContext context) {
@@ -63,6 +63,7 @@ class _SmartPlanningPageState extends State<SmartPlanningPage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
+
 }
 
 class FinancialPlanPage extends StatelessWidget {

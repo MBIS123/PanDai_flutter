@@ -9,8 +9,6 @@ class ApiService {
       var response = await http.post(
         Uri.parse('$BASE_URL//chat/completions'),
        // Uri.parse('https://api.openai.com/v1/chat/completions'),
-
-
         // https://api.openai.com/v1/chat/completions
         headers: {
           'Content-Type': 'application/json',

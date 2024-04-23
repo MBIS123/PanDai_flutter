@@ -3,6 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:http/http.dart' as http;
 
+import 'constants/budgetIncomeCategory.dart';
+
+// Your BudgetCategory class definition
+// Your getCategoryIconByName and getCategoryColor functions
+
 class HomePage extends StatefulWidget {
   final String title;
   final int userId;
@@ -124,7 +129,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 16),
+                  SizedBox(width: 16, height: 30),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: categorySpending.keys.map((category) {
@@ -143,73 +148,51 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ],
               ),
-              SizedBox(height: 16), // Adjust spacing between chart and legend
+              SizedBox(height: 30),
+              Center(
+                child: Container(
+                  width: double.infinity, // This will take all available space
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Theme.of(context).primaryColor), // Use the primary color for border
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: DataTable(
+                    columnSpacing: 10,
+                    horizontalMargin: 10,
+                    columns: [
+                      DataColumn(label: Text('Category', style: TextStyle(fontStyle: FontStyle.italic))),
+                      DataColumn(label: Text('Spent', style: TextStyle(fontStyle: FontStyle.italic))),
+                    ],
+                    rows: categorySpending.entries.map((entry) {
+                      final categoryName = entry.key;
+                      final categoryIcon = getCategoryIconByName(categoryName);
+                      final categoryColor = getCategoryColor(categoryName);
+
+                      return DataRow(
+                        cells: [
+                          DataCell(
+                            Row(
+                              children: [
+                                Icon(
+                                  categoryIcon,
+                                  color: categoryColor,
+                                ),
+                                SizedBox(width: 8),
+                                Text(categoryName),
+                              ],
+                            ),
+                          ),
+                          DataCell(Text('\$${entry.value.toStringAsFixed(2)}')),
+                        ],
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: _BottomNavigationBar(userId: widget.userId),
     );
   }
-}
-
-class _BottomNavigationBar extends StatefulWidget {
-  final int userId;
-
-  const _BottomNavigationBar({Key? key, required this.userId}) : super(key: key);
-
-  @override
-  State<_BottomNavigationBar> createState() => _BottomNavigationBarState();
-}
-
-class _BottomNavigationBarState extends State<_BottomNavigationBar> {
-  int _selectedIndex = 0;
-
-  static const List<Widget> _widgetOptions = <Widget>[
-    Text('Index 0: Home'),
-    Text('Index 1: Budget'),
-    Text('Index 2: Transaction'),
-    Text('Index 3: Smart Plan'),
-    Text('Index 4: Account'),
-  ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      items: const <BottomNavigationBarItem>[
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.wallet_giftcard),
-          label: 'Budget',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.add),
-          label: 'Transaction',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.account_balance),
-          label: 'Smart Plan',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.manage_accounts),
-          label: 'Account',
-        ),
-      ],
-      currentIndex: _selectedIndex,
-      onTap: _onItemTapped,
-    );
-  }
-
-
-
-
 }

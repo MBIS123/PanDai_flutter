@@ -47,8 +47,6 @@ class MyApp extends StatelessWidget {
         '/registerPage':(context) => RegisterPage(title: "Register UI"),
         '/HomePage':(context) => HomePage(title: "Home page" , userId: UserData().userId),
 
-        '/TransactionPage': (context) => TransactionPage(title: "Transaction UI", userId: UserData().userId),
-
 
       },
 

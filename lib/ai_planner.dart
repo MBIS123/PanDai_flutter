@@ -28,8 +28,24 @@ class _SmartPlanningPageState extends State<SmartPlanningPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Row(
+          children: [
+            Icon(
+              Icons.lightbulb_outline,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            SizedBox(width: 8), // Add spacing between icon and title
+            Text(
+              widget.title,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+          ],
+        ),
       ),
+
       body: financialPlans.isEmpty
           ? Center(
         child: Text(

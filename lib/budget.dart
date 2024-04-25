@@ -7,10 +7,9 @@ import 'model/budget_category.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pandai_planner_flutter/constants/budgetIncomeCategory.dart';
-
-
 import 'model/budget_info.dart'; // Import services for TextInputFormatter
 import 'package:flutter/material.dart';
+
 class MonthSwitcher extends StatefulWidget {
   final DateTime initialDate;
   final Function(DateTime) onMonthChanged;
@@ -70,11 +69,6 @@ class _MonthSwitcherState extends State<MonthSwitcher> {
   }
 }
 
-
-
-
-
-
 class BudgetPage extends StatefulWidget {
   const BudgetPage({Key? key, required this.title, required this.userId})
       : super(key: key);
@@ -84,6 +78,7 @@ class BudgetPage extends StatefulWidget {
   @override
   State<BudgetPage> createState() => _BudgetPageState();
 }
+
 
 class _BudgetPageState extends State<BudgetPage> {
   final _formKey = GlobalKey<FormState>();
@@ -95,15 +90,15 @@ class _BudgetPageState extends State<BudgetPage> {
   late double totalBudgetSpent = 0.00;
   late double totalBudgetLimit =0.00;
   DateTime selectedMonth = DateTime.now();
-
-
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _fetchBudgetData(selectedMonth);
-
   }
+
+
 
 
   List<BudgetCategory> getFilteredBudgetInfo() {
@@ -123,7 +118,6 @@ class _BudgetPageState extends State<BudgetPage> {
         unfilled.add(category);
       }
     }
-
     return filled + unfilled; // Concatenate filled first, then unfilled
   }
 
@@ -197,23 +191,16 @@ class _BudgetPageState extends State<BudgetPage> {
                   double budgetLimit = double.tryParse(_budgetController.text) ?? 0.0; // Fallback to 0.0 if parsing fails
                   print('Budget set to:' + budgetLimit.toString());
 
-                  DateTime budgetDate = DateTime.now();
                   String budgetCategory = category.name;
                   print('UserID: ' + widget.userId.toString());
-
-                  // Attempt to create the budget and refresh data
-                  await _createBudget(widget.userId, budgetLimit, budgetCategory, budgetDate);
+                  await _createBudget(widget.userId, budgetLimit, budgetCategory, selectedMonth);
                   await _fetchBudgetData(selectedMonth);
-
-                  // Use setState to trigger the UI update
                   setState(() {
                     print("doing refreshing");
                   });
                 } catch (error) {
-                  // Handle any errors here
                   print('An error occurred: $error');
                 } finally {
-                  // This block will execute no matter what and ensure the dialog is closed
                   Navigator.of(context).pop(); // Close the dialog
                 }
               },
@@ -290,6 +277,8 @@ class _BudgetPageState extends State<BudgetPage> {
           .map((budgetJson) => BudgetInfo.fromJson(budgetJson))
           .toList();
       setState(() {
+        isLoading = false;
+
         budgetInfoList = budgetList;
         totalBudgetLimit = budgetList.fold(0.0, (sum, item) => sum + item.budgetLimit);
         totalBudgetSpent = budgetList.fold(0.0, (sum, item) => sum + item.budgetSpent);
@@ -299,11 +288,6 @@ class _BudgetPageState extends State<BudgetPage> {
       print('Error response: ${response.body}');
     }
   }
-
-
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -322,14 +306,24 @@ class _BudgetPageState extends State<BudgetPage> {
     }
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () {},
-          ),
-        ],
+        title: Row(
+          children: [
+            Icon(
+              Icons.attach_money,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            SizedBox(width: 8), // Add spacing between icon and title
+            Text(
+              widget.title,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+          ],
+        ),
       ),
+
       body: Column(
         children: [
           MonthSwitcher(
@@ -361,8 +355,6 @@ class _BudgetPageState extends State<BudgetPage> {
               },
             ),
           ),
-
-
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Card(
@@ -382,7 +374,6 @@ class _BudgetPageState extends State<BudgetPage> {
                     Text(
 //                      'Total Budget: \$${budgetInfo?.budgetLimit ?? 'N/A'}',
                       'Total Budget: RM${totalBudgetLimit}',
-
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.green,
@@ -390,7 +381,7 @@ class _BudgetPageState extends State<BudgetPage> {
                     ),
                     Text(
 //                      'Total Budget: \$${budgetInfo?.budgetLimit ?? 'N/A'}',
-                      'Total Budget Spend: RM${totalBudgetSpent}',
+                      'Total Expenses: RM${totalBudgetSpent}',
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.red,
@@ -406,8 +397,6 @@ class _BudgetPageState extends State<BudgetPage> {
               ),
             ),
           ),
-
-
           Expanded(
             child: ListView.builder(
               itemCount: filteredBudgetInfo.length,
@@ -492,7 +481,5 @@ class _BudgetPageState extends State<BudgetPage> {
       ),
     );
   }
-
-
 
 }

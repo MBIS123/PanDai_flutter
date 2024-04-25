@@ -32,11 +32,12 @@ class _LoginPageState extends State<LoginPage> {
     _checkCredentials();
   }
 
-
   Future<void> _checkCredentials() async {
     print("checking the remember me");
+
     final storedEmail = await storage.read(key: 'email');
     final storedPassword = await storage.read(key: 'password');
+
     print("the storedEmail was:" + storedEmail.toString());
 
     if (storedEmail != null && storedPassword != null) {
@@ -46,7 +47,9 @@ class _LoginPageState extends State<LoginPage> {
       _validateLogin(storedEmail, storedPassword, remember: true);
       print('storage store');
     }
+
   }
+
 
   Future<void> _validateLogin(String email, String password, {bool remember = false}) async {
     final String apiUrl = 'http://10.0.2.2:8080/api/v1/users/login';
@@ -69,7 +72,6 @@ class _LoginPageState extends State<LoginPage> {
         await storage.write(key: 'email', value: email);
         await storage.write(key: 'password', value: password);
       }
-
       UserData().setUserId(userId);
 
       Future.delayed(Duration(seconds: 2), () {
@@ -83,7 +85,7 @@ class _LoginPageState extends State<LoginPage> {
     } else {
       // Handle error or validation failures here
       final snackBar = SnackBar(
-        content: Text('Invalid Login please reenter!'),
+        content: Text('Invalid Login Please Reenter!'),
         duration: Duration(seconds: 2),
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -95,13 +97,11 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
-      bottomNavigationBar: BottomWidget(userId: 2),
+    //  bottomNavigationBar: BottomWidget(userId: 2),
       body: Container(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -109,7 +109,7 @@ class _LoginPageState extends State<LoginPage> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             const Text(
-              'Sign in',
+              'Log in',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 40,
@@ -192,7 +192,7 @@ class _LoginPageState extends State<LoginPage> {
                       padding: const EdgeInsets.fromLTRB(40, 15, 40, 15),
                     ),
                     child: const Text(
-                      'Sign in',
+                      'Log in',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),

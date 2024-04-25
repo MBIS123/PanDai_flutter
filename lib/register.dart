@@ -22,9 +22,11 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _firstName = TextEditingController();
   final TextEditingController _lastName = TextEditingController();
+  final TextEditingController _fullNameController = TextEditingController();
+
 
   Future<void> _sendUserData(
-      String email, String password, String firstName, String lastName) async {
+      String email, String password, String fullName) async {
     final String apiUrl = 'http://10.0.2.2:8080/api/v1/users/register';
     // Replace with your Spring Boot API endpoint URL
     print('hellow1aaaaaaaaaaaaaaaaaaaaaaaaa');
@@ -36,8 +38,7 @@ class _RegisterPageState extends State<RegisterPage> {
       body: jsonEncode(<String, String>{
         'email': email,
         'password': password,
-        'firstName': firstName,
-        'lastName': lastName,
+        'name': fullName,
       }),
     );
     print('hellow2bbbbbbbbbbbbbbbbbbbbbbb');
@@ -70,8 +71,6 @@ class _RegisterPageState extends State<RegisterPage> {
       });
     }
   }
-
-
   // //void showSetBudgetDialog(BuildContext context, BudgetCategory category) {
   //   TextEditingController _budgetController = TextEditingController();
   //
@@ -136,48 +135,22 @@ class _RegisterPageState extends State<RegisterPage> {
               key: _formKey,
               child: Column(
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter a valid first name';
-                            }
-                          },
-                          controller: _firstName,
-                          maxLines: 1,
-                          decoration: InputDecoration(
-                            hintText: 'First name',
-                            prefixIcon: const Icon(Icons.person),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                        ),
+                  TextFormField(
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your full name';
+                      }
+                      return null;
+                    },
+                    controller: _fullNameController,
+                    maxLines: 1,
+                    decoration: InputDecoration(
+                      hintText: 'Full name',
+                      prefixIcon: const Icon(Icons.person),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      const SizedBox(
-                        width: 20,
-                      ),
-                      Expanded(
-                        child: TextFormField(
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter a valid Last name';
-                            }
-                          },
-                          controller: _lastName,
-                          maxLines: 1,
-                          decoration: InputDecoration(
-                            hintText: 'Last name',
-                            prefixIcon: const Icon(Icons.person),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                   const SizedBox(
                     height: 20,
@@ -262,9 +235,10 @@ class _RegisterPageState extends State<RegisterPage> {
                       if (_formKey.currentState!.validate()) {
                         String email = _emailController.text;
                         String password = _passwordController.text;
-                        String firstName = _firstName.text;
-                        String lastName = _lastName.text;
-                        _sendUserData(email, password, firstName, lastName);
+                        String fullName = _fullNameController.text;
+                        // Split the full name to get first and last names if needed
+                        // For now, we'll keep it as a single full name
+                        _sendUserData(email, password, fullName);
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -290,7 +264,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             context,
                             MaterialPageRoute(
                               builder: (context) =>
-                                  const LoginPage(title: 'Login UI'),
+                              const LoginPage(title: 'Login UI'),
                             ),
                           );
                         },

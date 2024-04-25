@@ -70,8 +70,26 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Row(
+          children: [
+            Icon(
+              Icons.home,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            SizedBox(width: 8), // Add spacing between icon and title
+            Text(
+              widget.title,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+          ],
+        ),
       ),
+
+
+
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -80,74 +98,100 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Budget Analysis',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 8),
-              SizedBox(height: 16), // Adjust spacing between chart and legend
-              Text('Total Budget: \$${totalBudget.toStringAsFixed(2)}'),
-              Text('Total Spent: \$${totalSpent.toStringAsFixed(2)}'),
-              Row(
-                children: [
-                  Expanded(
-                    child: AspectRatio(
-                      aspectRatio: 1.3,
-                      child: PieChart(
-                        PieChartData(
-                          sections: categorySpending.keys.map((category) {
-                            final value = categorySpending[category] ?? 0;
-                            return PieChartSectionData(
-                              color: Colors.primaries[categorySpending.keys.toList().indexOf(category) % Colors.primaries.length],
-                              value: value,
-                              radius: 50,
-                              titleStyle: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xffffffff),
+              Container(
+                decoration: BoxDecoration(
+                  color: Color(0xff1a1919),
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.5),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                ),
+                padding: EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Text(
+                      'Budget Analysis',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 8),
+                    SizedBox(height: 16),
+                    Text(
+                      'Total Budget: \RM${totalBudget.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.lightGreenAccent,
+                      ),
+                    ),
+                    Text(
+                      'Total Spent: \RM${totalSpent.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.pink,
+                      ),
+                    ),
+                    Expanded(
+                      child: AspectRatio(
+                        aspectRatio: 1.3,
+                        child: MouseRegion(
+                          onExit: (_) {
+                            setState(() {
+                              touchedIndex = null; // Reset on mouse exit
+                            });
+                          },
+                          child: PieChart(
+                            PieChartData(
+                              sections: categorySpending.keys.map((category) {
+                                final value = categorySpending[category] ?? 0;
+                                final index = categorySpending.keys.toList().indexOf(category);
+                                return PieChartSectionData(
+                                  color: Colors.primaries[index % Colors.primaries.length],
+                                  value: value.toDouble(),
+                                  radius: 50 + (touchedIndex == index ? 10 : 0), // Increase radius when touchedIndex matches
+                                  title: touchedIndex == index ? '$value' : '', // Show value on hover
+                                  showTitle: touchedIndex == index, // Only show title when hovering
+                                  titleStyle: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xffd7d4d4),
+                                  ),
+                                  titlePositionPercentageOffset: 0.6,
+                                  badgePositionPercentageOffset: 1.1,
+                                );
+                              }).toList(),
+                              sectionsSpace: 2,
+                              centerSpaceRadius: 40,
+                              pieTouchData: PieTouchData(
+                                touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                                  if (event is FlPointerHoverEvent && pieTouchResponse?.touchedSection != null) {
+                                    setState(() {
+                                      touchedIndex = pieTouchResponse!.touchedSection!.touchedSectionIndex;
+                                    });
+                                  } else if (event is FlPointerExitEvent) {
+                                    setState(() {
+                                      touchedIndex = null; // Reset touchedIndex when no longer hovering over the chart
+                                    });
+                                  }
+                                },
                               ),
-                              titlePositionPercentageOffset: 0.6,
-                              badgePositionPercentageOffset: 1.1,
-                            );
-                          }).toList(),
-                          sectionsSpace: 2,
-                          centerSpaceRadius: 40,
-                          pieTouchData: PieTouchData(
-                            touchCallback: (FlTouchEvent event, PieTouchResponse? pieTouchResponse) {
-                              if (event is FlTapUpEvent && pieTouchResponse != null && pieTouchResponse.touchedSection != null) {
-                                setState(() {
-                                  touchedIndex = pieTouchResponse.touchedSection!.touchedSectionIndex;
-                                });
-                              } else {
-                                setState(() {
-                                  touchedIndex = null;
-                                });
-                              }
-                            },
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  SizedBox(width: 16, height: 30),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: categorySpending.keys.map((category) {
-                      return Row(
-                        children: [
-                          SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: Container(color: Colors.primaries[categorySpending.keys.toList().indexOf(category) % Colors.primaries.length]),
-                          ),
-                          SizedBox(width: 8),
-                          Text(category),
-                        ],
-                      );
-                    }).toList(),
-                  ),
-                ],
+
+
+                  ],
+                ),
               ),
+
+
+
+
               SizedBox(height: 30),
               Center(
                 child: Container(
@@ -182,7 +226,7 @@ class _HomePageState extends State<HomePage> {
                               ],
                             ),
                           ),
-                          DataCell(Text('\$${entry.value.toStringAsFixed(2)}')),
+                          DataCell(Text('\RM${entry.value.toStringAsFixed(2)}')),
                         ],
                       );
                     }).toList(),

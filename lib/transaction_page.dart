@@ -83,6 +83,7 @@ class ViewTransactionPage extends StatefulWidget {
 class _ViewTransactionPageState extends State<ViewTransactionPage> {
   List<TransactionInfo> transactionHistory = [];
   DateTime selectedMonth = DateTime.now();
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -97,7 +98,9 @@ class _ViewTransactionPageState extends State<ViewTransactionPage> {
     // Extract year and month from the DateTime object
     int year = month.year;
     int monthNumber = month.month;
+    print('the year number:'+ year.toString());
 
+    print('the month number:'+ monthNumber.toString());
     final response = await http.get(
       Uri.parse(
           '$apiUrl?userId=${widget.userId}&year=$year&month=$monthNumber'),
@@ -113,6 +116,7 @@ class _ViewTransactionPageState extends State<ViewTransactionPage> {
           .toList();
       setState(() {
         transactionHistory = transactionList;
+        isLoading = false;
       });
     } else {
       print('Failed to load transactions. Status code: ${response.statusCode}');
@@ -210,21 +214,20 @@ class _ViewTransactionPageState extends State<ViewTransactionPage> {
     );
   }
 
-
-
   void _editTransaction(TransactionInfo transaction) {
-    Navigator.of(context).push(MaterialPageRoute(
+    Navigator.of(context)
+        .push(MaterialPageRoute(
       builder: (context) => TransactionPage(
         title: 'Edit Transaction',
         userId: widget.userId,
         transactionToEdit: transaction,
       ),
-    )).then((_) {
+    ))
+        .then((_) {
       // Call your method to fetch data from the backend here
       _fetchTransactionData(selectedMonth);
     });
   }
-
 
   void _deleteTransaction(TransactionInfo transaction) {
     showDialog(
@@ -287,104 +290,136 @@ class _ViewTransactionPageState extends State<ViewTransactionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
-        automaticallyImplyLeading: false,
+        title: Row(
+          children: [
+            Icon(
+              Icons.history,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            SizedBox(width: 8), // Add spacing between icon and title
+            Text(
+              widget.title,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+          ],
+        ),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          // MonthSwitcher remains at the top
-          SizedBox(
-            height: 20,
-          ),
-          MonthSwitcher(
-            initialDate: selectedMonth,
-            onMonthChanged: (DateTime newMonth) {
-              setState(() {
-                selectedMonth = newMonth;
-                _fetchTransactionData(selectedMonth);
-              });
-              //_fetchTransactionData(selectedMonth);
-            },
-          ),
-          // Spacer to push the message to the center
-          Expanded(
-            child: transactionHistory.isEmpty
-                ? Center(
-                    child: Text(
-                      'No transaction made in this month .\n Please create a new record.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: defaultColorScheme.primary,
-                      ),
+
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Container(
+        // Provide explicit constraints to the container
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height,
+
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              // MonthSwitcher remains at the top
+              SizedBox(
+                height: 20,
+              ),
+              MonthSwitcher(
+                initialDate: selectedMonth,
+                onMonthChanged: (DateTime newMonth) {
+                  setState(() {
+                    selectedMonth = newMonth;
+                    _fetchTransactionData(selectedMonth);
+                  });
+                },
+              ),
+              // Spacer to push the message to the center
+              Expanded(
+                child: transactionHistory.isEmpty
+                    ? Center(
+                  child: Text(
+                    'No transaction made in this month .\n Please create a new record.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: defaultColorScheme.primary,
                     ),
-                  )
-                : ListView.builder(
-                    itemCount: transactionHistory.length,
-                    itemBuilder: (context, index) {
-                      return Dismissible(
-                        key: UniqueKey(),
-                        direction: DismissDirection.horizontal,
-                        background: Container(
-                          color: Colors.red,
-                          padding: EdgeInsets.symmetric(horizontal: 20),
-                          alignment: Alignment.centerLeft,
-                          child: Icon(Icons.delete, color: Colors.white),
-                        ),
-                        secondaryBackground: Container(
-                          color: Colors.blue,
-                          padding: EdgeInsets.symmetric(horizontal: 20),
-                          alignment: Alignment.centerRight,
-                          child: Icon(Icons.edit, color: Colors.white),
-                        ),
-                        onDismissed: (direction) {
-                          if (direction == DismissDirection.startToEnd) {
-                            // Delete action
-                            _deleteTransaction(transactionHistory[index]);
-                          } else if (direction == DismissDirection.endToStart) {
-                            // Edit action
-                            _editTransaction(transactionHistory[index]);
-                          }
+                  ),
+                )
+                    : ListView.builder(
+                  itemCount: transactionHistory.length,
+                  itemBuilder: (context, index) {
+                    return Dismissible(
+                      key: UniqueKey(),
+                      direction: DismissDirection.horizontal,
+                      background: Container(
+                        color: Colors.red,
+                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        alignment: Alignment.centerLeft,
+                        child: Icon(Icons.delete, color: Colors.white),
+                      ),
+                      secondaryBackground: Container(
+                        color: Colors.blue,
+                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        alignment: Alignment.centerRight,
+                        child: Icon(Icons.edit, color: Colors.white),
+                      ),
+                      onDismissed: (direction) {
+                        if (direction ==
+                            DismissDirection.startToEnd) {
+                          // Delete action
+                          _deleteTransaction(
+                              transactionHistory[index]);
+                        } else if (direction ==
+                            DismissDirection.endToStart) {
+                          // Edit action
+                          _editTransaction(transactionHistory[index]);
+                        }
+                      },
+                      child: GestureDetector(
+                        onTap: () {
+                          _showTransactionDetailsDialog(
+                              transactionHistory[index]);
                         },
-                        child: GestureDetector(
-                          onTap: () {
-                            _showTransactionDetailsDialog(
-                                transactionHistory[index]);
-                          },
-                          child: Card(
-                            margin: EdgeInsets.all(8.0),
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: getCategoryColor(
-                                    transactionHistory[index].budgetCategory),
-                                child: Icon(
-                                  getCategoryIconByName(
-                                      transactionHistory[index].budgetCategory),
-                                  color: Colors.white,
-                                ),
+                        child: Card(
+                          margin: EdgeInsets.all(8.0),
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: getCategoryColor(
+                                  transactionHistory[index]
+                                      .budgetCategory),
+                              child: Icon(
+                                getCategoryIconByName(
+                                    transactionHistory[index]
+                                        .budgetCategory),
+                                color: Colors.white,
                               ),
-                              title: Text(
-                                  transactionHistory[index].budgetCategory),
-                              subtitle: Text(
-                                  'Amount: \$${transactionHistory[index].transactionAmount.toString()}'),
                             ),
+                            title: Text(transactionHistory[index]
+                                .budgetCategory),
+                            subtitle: Text(
+                              'Amount: \$${transactionHistory[index].transactionAmount.toString()} \nDate: ${DateFormat('yyyy-MM-dd').format(transactionHistory[index].transactionDate)}',
+                            ),
+
                           ),
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
-        ],
+
       ),
+
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => TransactionPage(
-                title: widget.title,
-                userId: widget.userId,
-              )
-          )).then((_) {
+          Navigator.of(context)
+              .push(MaterialPageRoute(
+                  builder: (context) => TransactionPage(
+                        title: widget.title,
+                        userId: widget.userId,
+                      )))
+              .then((_) {
             // Call your method to fetch data from the backend here
             _fetchTransactionData(selectedMonth);
           });
@@ -493,23 +528,14 @@ class _TransactionPageState extends State<TransactionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_pageTitle),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+        title: Text(_pageTitle , style: TextStyle(
+          fontWeight: FontWeight.bold,
+          color: Theme.of(context).colorScheme.primary,
+        ),),
+
       ),
       body: Column(
         children: <Widget>[
-          ListTile(
-            title: Text(_transactionAmount != null
-                ? 'RM ${_transactionAmount.toStringAsFixed(2)}'
-                : 'RM'),
-            trailing: Icon(Icons.keyboard_arrow_down),
-            onTap: _showCalculatorDialog,
-          ),
           ListTile(
             title: Text(_selectedCategory),
             trailing: Icon(Icons.keyboard_arrow_down),
@@ -519,9 +545,17 @@ class _TransactionPageState extends State<TransactionPage> {
               // Get the color from the selected category
               child: Icon(getCategoryIconByName(_selectedCategory),
                   color:
-                      Colors.white), // Get the icon from the selected category
+                  Colors.white), // Get the icon from the selected category
             ),
           ),
+          ListTile(
+            title: Text(_transactionAmount != null
+                ? 'RM ${_transactionAmount.toStringAsFixed(2)}'
+                : 'RM'),
+            trailing: Icon(Icons.keyboard_arrow_down),
+            onTap: _showCalculatorDialog,
+          ),
+
           ListTile(
             title: Text(_noteHeader),
             trailing: Icon(Icons.edit),
@@ -573,8 +607,7 @@ class _TransactionPageState extends State<TransactionPage> {
                       // Handle errors
                       print("Error saving transaction: $error");
                     }
-                  }
-                  else {
+                  } else {
                     try {
                       await _createTransaction(
                         widget.userId,
@@ -827,7 +860,7 @@ class _TransactionPageState extends State<TransactionPage> {
       builder: (BuildContext context) {
         // Create a TextEditingController to capture the input from the TextField
         return AlertDialog(
-          title: Text('Create Budget'),
+          title: Text('Create Transaction'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[

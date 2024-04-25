@@ -66,6 +66,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,9 +88,6 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
-
-
-
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -134,64 +132,70 @@ class _HomePageState extends State<HomePage> {
                         color: Colors.pink,
                       ),
                     ),
-                    Expanded(
-                      child: AspectRatio(
-                        aspectRatio: 1.3,
-                        child: MouseRegion(
-                          onExit: (_) {
-                            setState(() {
-                              touchedIndex = null; // Reset on mouse exit
-                            });
-                          },
-                          child: PieChart(
-                            PieChartData(
-                              sections: categorySpending.keys.map((category) {
-                                final value = categorySpending[category] ?? 0;
-                                final index = categorySpending.keys.toList().indexOf(category);
-                                return PieChartSectionData(
-                                  color: Colors.primaries[index % Colors.primaries.length],
-                                  value: value.toDouble(),
-                                  radius: 50 + (touchedIndex == index ? 10 : 0), // Increase radius when touchedIndex matches
-                                  title: touchedIndex == index ? '$value' : '', // Show value on hover
-                                  showTitle: touchedIndex == index, // Only show title when hovering
-                                  titleStyle: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: const Color(0xffd7d4d4),
-                                  ),
-                                  titlePositionPercentageOffset: 0.6,
-                                  badgePositionPercentageOffset: 1.1,
-                                );
-                              }).toList(),
-                              sectionsSpace: 2,
-                              centerSpaceRadius: 40,
-                              pieTouchData: PieTouchData(
-                                touchCallback: (FlTouchEvent event, pieTouchResponse) {
-                                  if (event is FlPointerHoverEvent && pieTouchResponse?.touchedSection != null) {
-                                    setState(() {
-                                      touchedIndex = pieTouchResponse!.touchedSection!.touchedSectionIndex;
-                                    });
-                                  } else if (event is FlPointerExitEvent) {
-                                    setState(() {
-                                      touchedIndex = null; // Reset touchedIndex when no longer hovering over the chart
-                                    });
-                                  }
-                                },
+                    Row(
+                      children: [
+                        Expanded(
+                          child: AspectRatio(
+                            aspectRatio: 1.3,
+                            child: PieChart(
+                              PieChartData(
+                                sections: categorySpending.keys.map((category) {
+                                  final value = categorySpending[category] ?? 0;
+                                  return PieChartSectionData(
+                                    color: Colors.primaries[categorySpending.keys.toList().indexOf(category) % Colors.primaries.length],
+                                    value: value,
+                                    radius: 50,
+                                    titleStyle: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xffd7d4d4),
+                                    ),
+                                    titlePositionPercentageOffset: 0.6,
+                                    badgePositionPercentageOffset: 1.1,
+                                  );
+                                }).toList(),
+                                sectionsSpace: 2,
+                                centerSpaceRadius: 40,
+                                pieTouchData: PieTouchData(
+                                  touchCallback: (FlTouchEvent event, PieTouchResponse? pieTouchResponse) {
+                                    if (event is FlTapUpEvent && pieTouchResponse != null && pieTouchResponse.touchedSection != null) {
+                                      setState(() {
+                                        touchedIndex = pieTouchResponse.touchedSection!.touchedSectionIndex;
+                                      });
+                                    } else {
+                                      setState(() {
+                                        touchedIndex = null;
+                                      });
+                                    }
+                                  },
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
+                        SizedBox(width: 16, height: 30),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: categorySpending.keys.map((category) {
+                            return Row(
+                              children: [
+                                SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: Container(color: Colors.primaries[categorySpending.keys.toList().indexOf(category) % Colors.primaries.length]),
+                                ),
+                                SizedBox(width: 8),
+                                Text(category),
+                              ],
+                            );
+                          }).toList(),
+                        ),
+                      ],
                     ),
-
 
                   ],
                 ),
               ),
-
-
-
-
               SizedBox(height: 30),
               Center(
                 child: Container(

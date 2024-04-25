@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:pandai_planner_flutter/savingPlan.dart';
+import 'package:pandai_planner_flutter/customized_saving_plan.dart';
+import 'package:pandai_planner_flutter/saving_plan.dart';
 import 'package:pandai_planner_flutter/services/api_service.dart';
 
 import 'login.dart';
@@ -72,8 +73,33 @@ class _SmartPlanningPageState extends State<SmartPlanningPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.of(context).push(MaterialPageRoute(builder: (context) => FinancialPlanPage()));
-        },
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Create Saving Plan with'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      // Use current account data logic
+                      Navigator.of(context).pop();
+                      Navigator.of(context).push(MaterialPageRoute(builder: (context) => CustomizedSavingPlan()));
+
+                    },
+                    child: Text('Current Account Data'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      // Create saving plan from scratch logic
+                      Navigator.of(context).pop();
+                      Navigator.of(context).push(MaterialPageRoute(builder: (context) => SavingPlanPage()));
+                    },
+                    child: Text('Create Saving Plan from Scratch'),
+                  ),
+                ],
+              );
+            },
+          );        },
         child: Icon(Icons.add),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
@@ -99,8 +125,9 @@ class FinancialPlanPage extends StatelessWidget {
               leading: Icon(Icons.account_balance), // Icon for Saving Plan
               title: Text('Saving Plan'),
               onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(builder: (context) => SavingPlanPage()));
+
               },
+
             ),
             ListTile(
               leading: Icon(Icons.directions_car), // Icon for Buy Car

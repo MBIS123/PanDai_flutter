@@ -96,7 +96,7 @@ class _ManageIncomeState extends State<ManageIncome> {
               onPressed: () {
                 _showAddIncomeDialog(context, category, widget.userId);
               },
-              child: Text('Add Income'),
+              child: Text('Set Income'),
             ),
           );
         },
@@ -182,7 +182,7 @@ class _ManageIncomeState extends State<ManageIncome> {
                 }
                 Navigator.of(context).pop();
               },
-              child: Text('Add'),
+              child: Text('Set'),
             ),
           ],
         );

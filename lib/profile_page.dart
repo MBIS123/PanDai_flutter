@@ -34,7 +34,7 @@ class _ProfilePageState extends State<ProfilePage> {
     _fetchIncomeData();
     _fetchBudgetData();
     income = 50000.0;
-    financialStatus = 'Healthy';
+    financialStatus = 'sss';
     accountDetails = 'Premium Account';
   }
 
@@ -128,7 +128,10 @@ class _ProfilePageState extends State<ProfilePage> {
                         userId: widget.userId,
                       ),
                     ),
-                  );
+                  ).then((_) {
+                    _fetchIncomeData();
+                  });
+
                 },
               ),
               // Added Logout button
@@ -175,6 +178,13 @@ class _ProfilePageState extends State<ProfilePage> {
         }
         setState(() {
           totalBudget = newTotalBudget;
+
+          if(totalBudget>income){
+            financialStatus="Unhealthy";
+          }else{
+            financialStatus="Healthy";
+          }
+
         });
       } else {
         throw Exception('Failed to load budget data with status code: ${response.statusCode}');

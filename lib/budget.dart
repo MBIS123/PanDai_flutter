@@ -387,11 +387,7 @@ class _BudgetPageState extends State<BudgetPage> {
                         color: Colors.red,
                       ),
                     ),
-                    LinearProgressIndicator(
-                      value: (0) / (1),
-                      backgroundColor: Colors.grey[300],
-                      color: Colors.blue,
-                    ),
+
                   ],
                 ),
               ),

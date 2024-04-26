@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -5,14 +6,28 @@ import 'dart:convert';
 import 'package:pandai_planner_flutter/services/api_service.dart';
 import 'package:pandai_planner_flutter/tempDisplayAdvice.dart';
 
+import 'model/income.dart';
+
 class CustomizedSavingPlan  extends StatefulWidget {
+
+  final String title;
+  final int userId;
+
+  const CustomizedSavingPlan({
+    Key? key,
+    required this.title,
+    required this.userId,
+  }) : super(key: key);
+
+
   @override
-  _CustomizedSavingPlanState  createState() => _CustomizedSavingPlanState();
+  State<CustomizedSavingPlan> createState() => _CustomizedSavingPlanState();
 }
 
 class _CustomizedSavingPlanState  extends State<CustomizedSavingPlan> {
   final _formKey = GlobalKey<FormState>();
-
+    double totalIncomeAmt =0;
+   double totalBudgetSpent =0 ;
   String _purpose = '';
   double _amount = 0.0;
   int _months = 1;
@@ -23,18 +38,130 @@ class _CustomizedSavingPlanState  extends State<CustomizedSavingPlan> {
   String assessment = "";
   String financialAdvice = "";
   String successScore = "";
+  String adjustBudgetExpenseAdvice ="";
+  List<Income> incomeList = [];
+  List<Map<String, dynamic>> incomeDataList = [];
+  List<Map<String, dynamic>> budgetDataList = [];
+  List<Map<String, dynamic>> transactionDataList = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchIncomeData();
+    _fetchBudgetData();
+    _fetchTransactionInfo();
+  }
+
+
+  Future<List<Map<String, dynamic>>> _fetchIncomeData() async {
+    final String apiUrl = 'http://10.0.2.2:8080/api/v1/income/getAllIncome?userId=${widget.userId}';
+    try {
+      final response = await http.get(Uri.parse(apiUrl));
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        for (var item in data) {
+          Map<String, dynamic> incomeData = {
+            'type': item['type'],
+            'amount': item['amount'],
+          };
+          incomeDataList.add(incomeData);
+        }
+        setState(() {
+          incomeDataList;
+          totalIncomeAmt = incomeDataList.map((income) => income['amount']).fold(0, (prev, amount) => prev + amount);
+        });
+        return incomeDataList;
+      } else {
+        print('Failed to fetch income data. Status code: ${response.statusCode}');
+        return []; // Return an empty list in case of failure
+      }
+    } catch (error) {
+      print('Error fetching income data: $error');
+      return []; // Return an empty list in case of error
+    }
+  }
+
+  Future<void> _fetchBudgetData() async {
+    final String apiUrl = 'http://10.0.2.2:8080/api/v1/budget/budgetCurrentMonth?userId=${widget.userId}';
+    try {
+      final response = await http.get(Uri.parse(apiUrl));
+      if (response.statusCode == 200) {
+        String responseBody = response.body;
+        List<dynamic> jsonResponse = jsonDecode(responseBody);
+        double newTotalBudgetSpent = 0;
+
+        for (var data in jsonResponse) {
+          Map<String, dynamic> budgetData = {
+            'category': data['budgetCategory'],
+            'limit': data['budgetLimit'],
+            'spent': data['budgetSpent'],
+          };
+          budgetDataList.add(budgetData);
+          double budgetSpent = (data['budgetSpent'] ?? 00).toDouble();
+          newTotalBudgetSpent += budgetSpent;
+        }
+        setState(() {
+          totalBudgetSpent = newTotalBudgetSpent;
+        });
+      } else {
+        throw Exception('Failed to load budget data with status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching data: $e');
+    }
+  }
+
+
+  Future<void> _fetchTransactionInfo() async {
+    final String apiUrl = 'http://10.0.2.2:8080/api/v1/transaction/getTransactionInfo';
+    try {
+      // Prepare the query parameters
+      Map<String, dynamic> queryParams = {
+        'userId': widget.userId.toString(),
+      };
+      // Send the GET request
+      final Uri uri = Uri.parse(apiUrl).replace(queryParameters: queryParams);
+      final response = await http.get(uri);
+      if (response.statusCode == 200) {
+        // Transaction information retrieved successfully
+        List<dynamic> jsonResponse = jsonDecode(response.body);
+
+        for (var data in jsonResponse) {
+          Map<String, dynamic> transactionData = {
+            'expenseDate': data['transactionDate'],
+            'expensetype': data['budgetCategory'],
+            'transactionAmt': data['transactionAmount'],
+          };
+          transactionDataList.add(transactionData);
+        }
+        setState(() {
+          transactionDataList ;
+        });        print('Transaction information: $jsonResponse');
+      } else {
+        // Failed to retrieve transaction information
+        print('Failed to retrieve transaction information with status code: ${response.statusCode}');
+        // You can handle the error here as needed
+      }
+    } catch (e) {
+      print('Error fetching transaction information: $e');
+      // Handle any exceptions that occur during the process
+    }
+  }
 
 
   Future<void> createAssesmentResponse() async {
     try {
-      final response = await ApiService.scratchAssessment(
+      final response = await ApiService.customisedAssessment(
         purpose: _purpose,
         amount: _amount,
         months: _months,
         years: _years,
-        monthlyExpense: _monthlyExpense,
-        monthlyIncome: _monthlyIncome,
+        monthlyExpense: totalBudgetSpent,
+        monthlyIncome: totalIncomeAmt,
         extraTarget: _extraTarget,
+        incomeDataList: incomeDataList,
+        budgetDataList: budgetDataList,
+        transactionDataList: transactionDataList
       );
 
       final jsonResponse = jsonDecode(response.body);
@@ -55,13 +182,13 @@ class _CustomizedSavingPlanState  extends State<CustomizedSavingPlan> {
 
   Future<void> createFinancialAdvice() async {
     try {
-      final response = await ApiService.scratchFinancialAdvice(
+      final response = await ApiService.customizedFinancialAdvice(
         purpose: _purpose,
         amount: _amount,
         months: _months,
         years: _years,
-        monthlyExpense: _monthlyExpense,
-        monthlyIncome: _monthlyIncome,
+        monthlyExpense: totalBudgetSpent,
+        monthlyIncome: totalIncomeAmt,
         extraTarget: _extraTarget,
       );
 
@@ -81,15 +208,16 @@ class _CustomizedSavingPlanState  extends State<CustomizedSavingPlan> {
     }
   }
 
+
   Future<void> createScoreResponse() async {
     try {
-      final response = await ApiService.scratchSuccessScore(
+      final response = await ApiService.customizedSuccessScore(
         purpose: _purpose,
         amount: _amount,
         months: _months,
         years: _years,
-        monthlyExpense: _monthlyExpense,
-        monthlyIncome: _monthlyIncome,
+        monthlyExpense: totalBudgetSpent,
+        monthlyIncome: totalIncomeAmt,
         extraTarget: _extraTarget,
       );
 
@@ -109,8 +237,56 @@ class _CustomizedSavingPlanState  extends State<CustomizedSavingPlan> {
     }
   }
 
+  Future<void> createBudgetExpenseAdjustResponse() async {
+    try {
+      final response = await ApiService.customizedBudgetExpenseAdjustment(
+        purpose: _purpose,
+        amount: _amount,
+        months: _months,
+        years: _years,
+        monthlyExpense: totalBudgetSpent,
+        monthlyIncome: totalIncomeAmt,
+        extraTarget: _extraTarget, incomeDataList: incomeDataList,
+        budgetDataList: budgetDataList,
+        transactionDataList: transactionDataList,
+      );
+
+      final jsonResponse = jsonDecode(response.body);
+      final List<dynamic> choices = jsonResponse['choices'];
+      if (choices.isNotEmpty) {
+        final Map<String, dynamic> choice = choices.first;
+        final advice = choice['message']['content'];
+        setState(() {
+          adjustBudgetExpenseAdvice = advice;
+        });
+      }
+    } catch (error) {
+      print("error $error");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (totalBudgetSpent == 0) { // fetch INCOME request haven't completed
+      return Center(
+        child: SizedBox(
+          width: 40,
+          height: 40,
+          child: CircularProgressIndicator(), // or any loading indicator
+        ),
+      );
+    }
+    else if (totalIncomeAmt == 0) { // fetch INCOME request haven't completed
+      return Center(
+        child: SizedBox(
+          width: 40,
+          height: 40,
+          child: CircularProgressIndicator(), // or any loading indicator
+        ),
+      );
+    }
+    else {
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Saving Plan'),
@@ -216,7 +392,25 @@ class _CustomizedSavingPlanState  extends State<CustomizedSavingPlan> {
                   ],
                 ),
                 SizedBox(height: 20),
+                TextFormField(
+                  decoration: InputDecoration(
+                    labelText: 'Total Monthly Income (\$)',
+                    border: OutlineInputBorder(),
+                  ),
+                  initialValue: totalIncomeAmt.toStringAsFixed(2), // Ensures the amount is displayed with two decimal places
+                  readOnly: true, // Makes the text field read-only
+                ),
 
+                SizedBox(height: 20),
+
+                TextFormField(
+                  decoration: InputDecoration(
+                    labelText: 'Total Monthly Expenses (\$)',
+                    border: OutlineInputBorder(),
+                  ),
+                  initialValue: totalBudgetSpent.toStringAsFixed(2), // Ensures the amount is displayed with two decimal places
+                  readOnly: true, // Makes the text field read-only
+                ),
 
                 SizedBox(height: 20),
                 TextFormField(
@@ -239,15 +433,42 @@ class _CustomizedSavingPlanState  extends State<CustomizedSavingPlan> {
                 ),
                 SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      await createAssesmentResponse();
-                      await createFinancialAdvice();
-                      await createScoreResponse();
-                      Navigator.of(context).push(MaterialPageRoute(builder: (context) => TempAdvice(financialAdvice: financialAdvice , assessment: assessment,successbilityScore: successScore,)));
-                    }
-                  },
-                  child: Text('Create Saving Plan'),
+                    onPressed: () async {
+                      if (_formKey.currentState!.validate()) {
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false, // Prevent dialog from closing when tapped outside
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CircularProgressIndicator(), // Loading indicator
+                                  SizedBox(height: 16),
+                                  Text('Generating SMART financial advice...'),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+
+                        // Perform async tasks
+                        await createAssesmentResponse();
+                        await createFinancialAdvice();
+                        await createScoreResponse();
+                        await createBudgetExpenseAdjustResponse();
+
+                        // Close the dialog
+                        Navigator.of(context).pop(); // Dismiss the dialog
+
+                        // Navigate to the next screen
+                        Navigator.of(context).push(MaterialPageRoute(builder: (context) => TempAdvice(financialAdvice: financialAdvice ,
+                          assessment: assessment,
+                          successbilityScore: successScore,
+                        budgetExpenseAdjustment: adjustBudgetExpenseAdvice,)));
+                      }
+                    },
+                    child: Text('Create Saving Plan'),
                 ),
               ],
             ),
@@ -257,3 +478,5 @@ class _CustomizedSavingPlanState  extends State<CustomizedSavingPlan> {
     );
   }
 }
+}
+

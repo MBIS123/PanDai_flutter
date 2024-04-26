@@ -83,7 +83,7 @@ class _SmartPlanningPageState extends State<SmartPlanningPage> {
                     onPressed: () {
                       // Use current account data logic
                       Navigator.of(context).pop();
-                      Navigator.of(context).push(MaterialPageRoute(builder: (context) => CustomizedSavingPlan()));
+                      Navigator.of(context).push(MaterialPageRoute(builder: (context) => CustomizedSavingPlan(title: 'Customized Financial Plan', userId: widget.userId,)));
 
                     },
                     child: Text('Current Account Data'),

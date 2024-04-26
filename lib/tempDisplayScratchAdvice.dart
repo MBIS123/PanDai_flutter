@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 
-class TempAdvice extends StatelessWidget {
+class TempAdviceScratch extends StatelessWidget {
   final String assessment;
   final String financialAdvice;
   final String successbilityScore;
-  final String budgetExpenseAdjustment;
 
-  const TempAdvice({
+  const TempAdviceScratch({
     Key? key,
     required this.assessment,
     required this.financialAdvice,
     required this.successbilityScore,
-    required this.budgetExpenseAdjustment,
   }) : super(key: key);
 
   @override
@@ -29,8 +27,7 @@ class TempAdvice extends StatelessWidget {
               _buildSection('Achievability Score (0-100)', successbilityScore, Icons.score, Colors.orange),
               Divider(),
               _buildSection('Assessment', assessment, Icons.assessment, Colors.blue),
-              Divider(),
-              _buildSection('Financial Adjustment', budgetExpenseAdjustment, Icons.compare_arrows, Colors.pinkAccent),
+
               Divider(),
               _buildSection('Financial Advice', financialAdvice, Icons.attach_money, Colors.green),
               SizedBox(height: 20),

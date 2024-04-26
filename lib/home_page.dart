@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:http/http.dart' as http;
-
 import 'constants/budgetIncomeCategory.dart';
+import 'package:intl/intl.dart';
 
 // Your BudgetCategory class definition
 // Your getCategoryIconByName and getCategoryColor functions
@@ -113,10 +113,9 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   children: [
                     Text(
-                      'Budget Analysis',
+                      'Budget Analysis as of ${DateFormat('MMMM yyyy').format(DateTime.now())}',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
-                    SizedBox(height: 8),
                     SizedBox(height: 16),
                     Text(
                       'Total Budget: \RM${totalBudget.toStringAsFixed(2)}',
@@ -192,7 +191,6 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ],
                     ),
-
                   ],
                 ),
               ),

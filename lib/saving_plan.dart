@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:pandai_planner_flutter/services/api_service.dart';
 import 'package:pandai_planner_flutter/tempDisplayAdvice.dart';
+import 'package:pandai_planner_flutter/tempDisplayScratchAdvice.dart';
 
 class SavingPlanPage extends StatefulWidget {
   @override
@@ -99,7 +100,6 @@ class _SavingPlanPageState extends State<SavingPlanPage> {
       if (choices.isNotEmpty) {
         final Map<String, dynamic> choice = choices.first;
         final advice = choice['message']['content'];
-
         setState(() {
           successScore = advice;
         });
@@ -279,7 +279,7 @@ class _SavingPlanPageState extends State<SavingPlanPage> {
                       await createAssesmentResponse();
                       await createFinancialAdvice();
                       await createScoreResponse();
-                      Navigator.of(context).push(MaterialPageRoute(builder: (context) => TempAdvice(financialAdvice: financialAdvice , assessment: assessment,successbilityScore: successScore,)));
+                      Navigator.of(context).push(MaterialPageRoute(builder: (context) =>  TempAdviceScratch(financialAdvice: financialAdvice , assessment: assessment,successbilityScore: successScore)));
                     }
                   },
                   child: Text('Create Saving Plan'),

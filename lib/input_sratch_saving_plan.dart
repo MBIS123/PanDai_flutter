@@ -62,6 +62,21 @@ class _SavingPlanPageState extends State<SavingPlanPage> {
     }
   }
 
+  void _resetForm() {
+    setState(() {
+      _formKey.currentState?.reset(); // Reset the form state
+      _purpose = '';
+      _amount = 0.0;
+      _months = 1;
+      _years = 0;
+      _extraTarget = 0.0;
+      assessment = '';
+      financialAdvice = '';
+      successScore = '';
+    });
+  }
+
+
   Future<void> createFinancialAdvice() async {
     try {
       final response = await ApiService.scratchFinancialAdvice(
@@ -377,7 +392,9 @@ class _SavingPlanPageState extends State<SavingPlanPage> {
                       Navigator.of(context).pop(); // Dismiss the dialog
                       Navigator.of(context).push(MaterialPageRoute(builder: (context) => TempAdviceScratch(financialAdvice: financialAdvice ,
                         assessment: assessment,
-                        successbilityScore: successScore,)));
+                        successbilityScore: successScore,))).then((_){
+                        _resetForm();
+                      });
                     }
                   },
                   child: Text('Create Saving Plan'),

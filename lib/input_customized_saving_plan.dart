@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:pandai_planner_flutter/services/api_service.dart';
 import 'package:pandai_planner_flutter/tempDisplayCustomizedAdvice.dart';
 
+import 'main.dart';
 import 'model/income.dart';
 
 class CustomizedSavingPlan  extends StatefulWidget {
@@ -51,6 +52,22 @@ class _CustomizedSavingPlanState  extends State<CustomizedSavingPlan> {
     _fetchBudgetData();
     _fetchTransactionInfo();
   }
+
+  void _resetForm() {
+    setState(() {
+      _formKey.currentState?.reset(); // Reset the form state
+      _purpose = '';
+      _amount = 0.0;
+      _months = 1;
+      _years = 0;
+      _extraTarget = 0.0;
+      assessment = '';
+      financialAdvice = '';
+      successScore = '';
+      adjustBudgetExpenseAdvice = '';
+    });
+  }
+
 
 
   Future<List<Map<String, dynamic>>> _fetchIncomeData() async {
@@ -506,7 +523,7 @@ class _CustomizedSavingPlanState  extends State<CustomizedSavingPlan> {
                                     'Generating SMART financial advice...',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      color: Theme.of(context).primaryColor,
+                                      color: defaultColorScheme.primary,
                                     ),
                                   ),
                                 ],
@@ -529,7 +546,11 @@ class _CustomizedSavingPlanState  extends State<CustomizedSavingPlan> {
                         Navigator.of(context).push(MaterialPageRoute(builder: (context) => TempAdvice(financialAdvice: financialAdvice ,
                           assessment: assessment,
                           successbilityScore: successScore,
-                        budgetExpenseAdjustment: adjustBudgetExpenseAdvice,)));
+                        budgetExpenseAdjustment: adjustBudgetExpenseAdvice,))
+
+                        ).then((_){
+                          _resetForm();
+                        });
                       }
                     },
                     child: Text('Create Saving Plan'),

@@ -57,7 +57,11 @@ class _RegisterPageState extends State<RegisterPage> {
 
       // Navigate to the home page after a short delay
       Future.delayed(Duration(seconds: 2), () {
-        Navigator.pushReplacementNamed(context, '/homePage');
+        Navigator.of(context)
+            .push(MaterialPageRoute(
+            builder: (context) => LoginPage(
+              title: widget.title,
+            ))) ;
       });
     } else {
       // Handle error or validation failures here
@@ -117,10 +121,14 @@ class _RegisterPageState extends State<RegisterPage> {
       backgroundColor: Theme.of(context).colorScheme.background,
       body: Container(
         padding: const EdgeInsets.all(20),
-        child: Column(
+        child: SingleChildScrollView(
+    child: Container(
+    padding: const EdgeInsets.all(20),
+       child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
+            SizedBox(height: 80,),
             const Text(
               'Sign up',
               style: TextStyle(
@@ -244,6 +252,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.fromLTRB(40, 15, 40, 15),
                     ),
+
                     child: const Text(
                       'Sign up',
                       style: TextStyle(
@@ -277,7 +286,7 @@ class _RegisterPageState extends State<RegisterPage> {
             )
           ],
         ),
-      ),
-    );
+        ) ),
+    ));
   }
 }

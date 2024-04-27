@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'package:pandai_planner_flutter/services/api_service.dart';
-import 'package:pandai_planner_flutter/tempDisplayAdvice.dart';
+import 'package:pandai_planner_flutter/tempDisplayCustomizedAdvice.dart';
 
 import 'model/income.dart';
 
@@ -31,7 +31,7 @@ class _CustomizedSavingPlanState  extends State<CustomizedSavingPlan> {
   String _purpose = '';
   double _amount = 0.0;
   int _months = 1;
-  int _years = 1;
+  int _years = 0;
   double _monthlyExpense = 0.0;
   double _monthlyIncome = 0.0;
   double _extraTarget = 0.0;
@@ -265,6 +265,64 @@ class _CustomizedSavingPlanState  extends State<CustomizedSavingPlan> {
     }
   }
 
+  Future<void> _createFinancialPlan(
+      int userId,
+      double targetAmount,
+      String planName,
+      String successScore,
+      String assessment,
+      String financialAdvice,
+      String financialAdjustment,
+      DateTime createPlanTime
+     ) async {
+    // Proceed with creating the transaction if all validations pass
+    final String apiUrl =
+        'http://10.0.2.2:8080/api/v1/financialPlan/createFinancialPlan'; // Replace with your actual endpoint URL
+    DateTime now = DateTime.now();
+
+    print('Creating Financial plan');
+    final response = await http.post(
+      Uri.parse(apiUrl),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'userId': userId,
+        'targetAmount': targetAmount,
+        'planName': planName,
+        'assessment': assessment,
+        'successScore': successScore,
+        'financialAdvice': financialAdvice,
+        'financialAdjustment': financialAdjustment,
+        'createPlanDate':  createPlanTime.toIso8601String(),
+      }),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      // Handle a successful response here
+      print(' Financial plan created successfully');
+      print('Response: ${response.body}');
+      final snackBar = SnackBar(
+        content: Text(' Financial plan Recorded!'),
+        duration: Duration(seconds: 2),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      // Navigate to the home page after a short delay
+      Future.delayed(Duration(seconds: 2), () {
+        setState(() {
+          print("reloaded");
+        });
+      });
+    } else {
+      // Handle error or validation failures here
+      print(
+          'Failed to create FinancialPlan. Status code: ${response.statusCode}');
+      print('Error response: ${response.body}');
+    }
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     if (totalBudgetSpent == 0) { // fetch INCOME request haven't completed
@@ -286,7 +344,6 @@ class _CustomizedSavingPlanState  extends State<CustomizedSavingPlan> {
       );
     }
     else {
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Saving Plan'),
@@ -398,7 +455,7 @@ class _CustomizedSavingPlanState  extends State<CustomizedSavingPlan> {
                     border: OutlineInputBorder(),
                   ),
                   initialValue: totalIncomeAmt.toStringAsFixed(2), // Ensures the amount is displayed with two decimal places
-                  readOnly: true, // Makes the text field read-only
+                  readOnly: true,
                 ),
 
                 SizedBox(height: 20),
@@ -415,7 +472,7 @@ class _CustomizedSavingPlanState  extends State<CustomizedSavingPlan> {
                 SizedBox(height: 20),
                 TextFormField(
                   decoration: InputDecoration(
-                    labelText: 'Extra Target (\$)',
+                    labelText: 'Extra Saving Target (\$)',
                     border: OutlineInputBorder(),
                   ),
                   keyboardType: TextInputType.number,
@@ -445,7 +502,13 @@ class _CustomizedSavingPlanState  extends State<CustomizedSavingPlan> {
                                 children: [
                                   CircularProgressIndicator(), // Loading indicator
                                   SizedBox(height: 16),
-                                  Text('Generating SMART financial advice...'),
+                                  Text(
+                                    'Generating SMART financial advice...',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(context).primaryColor,
+                                    ),
+                                  ),
                                 ],
                               ),
                             );
@@ -457,11 +520,12 @@ class _CustomizedSavingPlanState  extends State<CustomizedSavingPlan> {
                         await createFinancialAdvice();
                         await createScoreResponse();
                         await createBudgetExpenseAdjustResponse();
+                        await _createFinancialPlan(widget.userId, _amount, _purpose, successScore,
+                            assessment, financialAdvice, adjustBudgetExpenseAdvice
+                            ,DateTime.now());
 
-                        // Close the dialog
+
                         Navigator.of(context).pop(); // Dismiss the dialog
-
-                        // Navigate to the next screen
                         Navigator.of(context).push(MaterialPageRoute(builder: (context) => TempAdvice(financialAdvice: financialAdvice ,
                           assessment: assessment,
                           successbilityScore: successScore,

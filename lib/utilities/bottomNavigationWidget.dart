@@ -4,7 +4,7 @@ import 'package:pandai_planner_flutter/budget.dart';
 import 'package:pandai_planner_flutter/home_page.dart';
 import 'package:pandai_planner_flutter/register.dart';
 import 'package:pandai_planner_flutter/transaction_page.dart';
-import '../ai_planner.dart';
+import '../smart_plan.dart';
 import '../main.dart';
 import '../profile_page.dart';
 

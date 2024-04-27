@@ -1,37 +1,50 @@
 import 'package:flutter/material.dart';
 
 class FinancialPlan {
-  final int planId;
-  final int userId;
-  final String planCategory;
-  final double planAmount;
-  final DateTime planDate;
+  final int financialPlanId; // Updated property name to match entity class
+  final String planName;
+  final double targetAmount;
+  final DateTime createPlanDate;
+  final String successScore;
+  final String assessment;
+  final String financialAdvice;
+  final String financialAdjustment;
 
   FinancialPlan({
-    required this.planId,
-    required this.userId,
-    required this.planCategory,
-    required this.planAmount,
-    required this.planDate,
+    required this.financialPlanId, // Updated property name to match entity class
+    required this.planName,
+    required this.targetAmount,
+    required this.createPlanDate,
+    required this.successScore,
+    required this.assessment,
+    required this.financialAdvice,
+    required this.financialAdjustment,
   });
 
   factory FinancialPlan.fromJson(Map<String, dynamic> json) {
     return FinancialPlan(
-      planId: json['plan_id'],
-      userId: json['user_id'],
-      planCategory: json['plan_category'],
-      planAmount: json['plan_amount'].toDouble(),
-      planDate: DateTime.parse(json['plan_date']),
+      financialPlanId: json['financialPlanId'] ?? 0,
+      planName: json['planName'] ?? '',
+      targetAmount: (json['targetAmount'] ?? 0.0).toDouble(),
+      createPlanDate: DateTime.parse(json['createPlanDate'] ?? ''),
+      successScore: json['successScore'] ?? '',
+      assessment: json['assessment'] ?? '',
+      financialAdvice: json['financialAdvice'] ?? '',
+      financialAdjustment: json['financialAdjustment'] ?? '',
     );
   }
 
+
   Map<String, dynamic> toJson() {
     return {
-      'plan_id': planId,
-      'user_id': userId,
-      'plan_category': planCategory,
-      'plan_amount': planAmount,
-      'plan_date': planDate.toIso8601String(),
+      'financialPlanId': financialPlanId, // Updated property name to match entity class
+      'planName': planName,
+      'targetAmount': targetAmount,
+      'createPlanDate': createPlanDate.toIso8601String(),
+      'successScore': successScore,
+      'assessment': assessment,
+      'financialAdvice': financialAdvice,
+      'financialAdjustment': financialAdjustment,
     };
   }
 }

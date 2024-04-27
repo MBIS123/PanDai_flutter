@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'package:pandai_planner_flutter/utilities/bottomNavigationWidget.dart';
-
 import 'main.dart';
 import 'model/transaction_info.dart';
 import 'user_Data.dart';
@@ -15,7 +13,7 @@ import 'package:pandai_planner_flutter/budget.dart';
 import 'package:pandai_planner_flutter/home_page.dart';
 import 'package:pandai_planner_flutter/register.dart';
 import 'package:pandai_planner_flutter/transaction_page.dart';
-import '../ai_planner.dart';
+import '../smart_plan.dart';
 import '../profile_page.dart';
 import 'package:pandai_planner_flutter/constants/budgetIncomeCategory.dart';
 
@@ -453,9 +451,7 @@ class _TransactionPageState extends State<TransactionPage> {
   String _noteHeader = 'Write note';
   late DateTime _selectedDate;
   late DateTime _selectedTime;
-
   String formatedTime = "";
-
   double _transactionAmount = 0.00;
 
   String getFormattedDate() {
@@ -722,6 +718,8 @@ class _TransactionPageState extends State<TransactionPage> {
       print('Error response: ${response.body}');
     }
   }
+
+
 
   Future<void> _updateTransaction(
       int userId,

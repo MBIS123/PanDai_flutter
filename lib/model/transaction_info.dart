@@ -40,7 +40,6 @@ class TransactionInfo {
       'note': note,
       'transactionDate': transactionDate.toIso8601String(),
       'transactionTime': transactionTime.toIso8601String(),
-
       'transactionAmount': transactionAmount,
     };
   }

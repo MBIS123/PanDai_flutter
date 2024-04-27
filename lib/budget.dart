@@ -235,8 +235,12 @@ class _BudgetPageState extends State<BudgetPage> {
       print('Response: ${response.body}');
 
       final snackBar = SnackBar(
-        content: Text('Updated budget successfully!'),
+        content: Text('Updated budget successfully!'  , style: TextStyle(
+            fontWeight: FontWeight.bold
+        ) ),
         duration: Duration(seconds: 2),
+        backgroundColor: Colors.lightGreenAccent
+
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
       // Navigate to the home page after a short delay

@@ -37,17 +37,6 @@ class _HomePageState extends State<HomePage> {
       final response = await http.get(Uri.parse(apiUrl));
       if (response.statusCode == 200) {
         String responseBody = response.body;
-        if (responseBody.isEmpty) {
-          // Set default values if response is empty
-          setState(() {
-            totalBudget = 0;
-            totalSpent = 0;
-            categorySpending = {};
-            isLoading = false;
-          });
-          return;
-        }
-
         List<dynamic> jsonResponse = jsonDecode(responseBody);
         double newTotalBudget = 0;
         double newTotalSpent = 0;
@@ -124,7 +113,7 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   children: [
                     Text(
-                      'Budget Analysis as of ${DateFormat('MMMM yyyy').format(DateTime.now())}',
+                      'Expenses Analysis as of ${DateFormat('MMMM yyyy').format(DateTime.now())}',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 16),

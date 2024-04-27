@@ -85,8 +85,13 @@ class _LoginPageState extends State<LoginPage> {
     } else {
       // Handle error or validation failures here
       final snackBar = SnackBar(
-        content: Text('Invalid Login Please Reenter!'),
+        content: Text('Invalid Login Please Retry!',
+          style: TextStyle(
+          fontWeight: FontWeight.bold
+        ),),
         duration: Duration(seconds: 2),
+        backgroundColor: Colors.red, // Customizing background color
+
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
       setState(() {

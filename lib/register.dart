@@ -17,6 +17,8 @@ class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
   var rememberValue = false;
   var emailError;
+  String? emailErrorMessage;
+
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -28,8 +30,7 @@ class _RegisterPageState extends State<RegisterPage> {
   Future<void> _sendUserData(
       String email, String password, String fullName) async {
     final String apiUrl = 'http://10.0.2.2:8080/api/v1/users/register';
-    // Replace with your Spring Boot API endpoint URL
-    print('hellow1aaaaaaaaaaaaaaaaaaaaaaaaa');
+
     final response = await http.post(
       Uri.parse(apiUrl),
       headers: <String, String>{
@@ -41,77 +42,50 @@ class _RegisterPageState extends State<RegisterPage> {
         'name': fullName,
       }),
     );
-    print('hellow2bbbbbbbbbbbbbbbbbbbbbbb');
 
     if (response.statusCode == 201) {
-      // Handle a successful response here
-      print('register successful');
-      print('Response: ${response.body}');
-      Navigator.pushReplacementNamed(context, '/homePage');
+      // Handle a successful response
+      print('Registration successful');
+      // Show snackbar with success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Registration successful!'),
+          duration: Duration(seconds: 2),
+          backgroundColor: Colors.lightGreenAccent, // Customizing background color
 
-      final snackBar = SnackBar(
-        content: Text('Registration successful!'),
-        duration: Duration(seconds: 2),
+        ),
       );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
 
-      // Navigate to the home page after a short delay
+      // Navigate to the login page after a short delay
       Future.delayed(Duration(seconds: 2), () {
-        Navigator.of(context)
-            .push(MaterialPageRoute(
-            builder: (context) => LoginPage(
-              title: widget.title,
-            ))) ;
+        Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => LoginPage(
+            title: widget.title,
+          ),
+        ));
       });
-    } else {
-      // Handle error or validation failures here
-      print('Failed to register in. Status code: ${response.statusCode}');
-      print('Error response: ${response.body}');
-    }
-    if (response.statusCode == 500) {
+    } else if (response.statusCode == 500) {
+      // Handle email already taken error
+      print("Email is already taken");
+      // Show snackbar with warning message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('The email is already taken.'),
+          duration: Duration(seconds: 2),
+          backgroundColor: Colors.orange, // Customizing background color
+        ),
+      );
+      // Update state to display error message
       setState(() {
-        // Set some state in your widget to display the error
+        emailErrorMessage = "The Email is already taken";
         emailError = true;
       });
+    } else {
+      // Handle other errors
+      print('Failed to register. Status code: ${response.statusCode}');
+      print('Error response: ${response.body}');
     }
   }
-  // //void showSetBudgetDialog(BuildContext context, BudgetCategory category) {
-  //   TextEditingController _budgetController = TextEditingController();
-  //
-  //   showDialog(
-  //     context: context,
-  // //     builder: (BuildContext context) {
-  // //       return AlertDialog(
-  // //         title: Text('Create Budget for ${category.name}'),
-  // //         content: Column(
-  // //           mainAxisSize: MainAxisSize.min,
-  // //           children: <Widget>[
-  //             // Your dialog content here
-  //           ],
-  //         ),
-  //         actions: <Widget>[
-  //           TextButton(
-  //             child: Text('CANCEL'),
-  //             onPressed: () => Navigator.of(context).pop(),
-  //           ),
-  //           TextButton(
-  //             child: Text('SET'),
-  //             onPressed: () {
-  //               // Handle the budget setting logic
-  //               print('Budget set for ${category.name}: ${_budgetController.text}');
-  //               // Here you would call your database logic to save the budget
-  //               // Make sure to include both the amount and the category ID
-  //               Navigator.of(context).pop();
-  //             },
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -168,16 +142,15 @@ class _RegisterPageState extends State<RegisterPage> {
                       EmailValidator.validate(value!)
                           ? null
                           : "Please enter a valid email";
-                      if (emailError == true) {
-                        return "The Email was taken";
+                      if (emailErrorMessage != null) {
+                        return emailErrorMessage;
                       }
                       return null;
                     },
                     onChanged: (value) {
                       if (emailError != null) {
                         setState(() {
-                          emailError = null;
-                        });
+                          emailErrorMessage = null;      });
                       }
                     },
                     controller: _emailController,
@@ -277,7 +250,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             ),
                           );
                         },
-                        child: const Text('Sign in'),
+                        child: const Text('Log in'),
                       ),
                     ],
                   ),

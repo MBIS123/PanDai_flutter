@@ -320,8 +320,9 @@ class _CustomizedSavingPlanState  extends State<CustomizedSavingPlan> {
       print(' Financial plan created successfully');
       print('Response: ${response.body}');
       final snackBar = SnackBar(
-        content: Text(' Financial plan Recorded!'),
+        content: Text(' Financial plan Recorded!', style: TextStyle(fontWeight: FontWeight.bold,),),
         duration: Duration(seconds: 2),
+        backgroundColor: Colors.lightGreenAccent,
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
       // Navigate to the home page after a short delay

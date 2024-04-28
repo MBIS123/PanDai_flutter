@@ -20,7 +20,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   late String customerName = "";
-  double income = 0;
+  double income = -1;
   double expenses = 0;
   String financialStatus = "";
   double totalBudget = 0;
@@ -32,12 +32,12 @@ class _ProfilePageState extends State<ProfilePage> {
     super.initState();
     _fetchUserData(widget.userId);
     _fetchIncomeData();
-    _fetchBudgetData();
+    _fetchTransactionData();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (income == 0) {
+    if (incomeList == 0 && incomeList.isNotEmpty) {
       // fetch INCOME request havent complete
       return CircularProgressIndicator(); // or any loading indicator
     } else {
@@ -154,24 +154,29 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  Future<void> _fetchBudgetData() async {
+  Future<void> _fetchTransactionData() async {
     final String apiUrl =
-        'http://10.0.2.2:8080/api/v1/budget/budgetCurrentMonth?userId=${widget.userId}';
+        'http://10.0.2.2:8080/api/v1/transaction/getTransactionInfoByCategory';
     try {
-      final response = await http.get(Uri.parse(apiUrl));
+      final response = await http.get(
+        Uri.parse('$apiUrl?userId=${widget.userId}'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
       if (response.statusCode == 200) {
         String responseBody = response.body;
         List<dynamic> jsonResponse = jsonDecode(responseBody);
-        double newTotalBudgetSpent = 0;
-        Map<String, double> newCategorySpending = {};
+        print("The jsonResponse is:" + jsonResponse.toString());
+        double totalBudgetSpent = 0;
 
         for (var data in jsonResponse) {
-          double budgetSpent = (data['budgetSpent'] ?? 00).toDouble();
-          newTotalBudgetSpent += budgetSpent;
+          double transactionAmount = (data['transactionAmount'] ?? 0).toDouble();
+          totalBudgetSpent += transactionAmount;
         }
-        setState(() {
-          totalBudget = newTotalBudgetSpent;
 
+        setState(() {
+          totalBudget = totalBudgetSpent;
           if (totalBudget > income) {
             financialStatus = "Unhealthy";
           } else {
@@ -180,7 +185,7 @@ class _ProfilePageState extends State<ProfilePage> {
         });
       } else {
         throw Exception(
-            'Failed to load budget data with status code: ${response.statusCode}');
+            'Failed to load transaction data with status code: ${response.statusCode}');
       }
     } catch (e) {
       print('Error fetching data: $e');

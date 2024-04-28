@@ -170,6 +170,8 @@ class _SavingPlanPageState extends State<SavingPlanPage> {
       final snackBar = SnackBar(
         content: Text(' Financial plan Recorded!'),
         duration: Duration(seconds: 2),
+        backgroundColor: Colors.lightGreenAccent,
+
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
       // Navigate to the home page after a short delay

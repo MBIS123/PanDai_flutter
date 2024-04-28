@@ -176,8 +176,15 @@ class _SmartPlanningPageState extends State<SmartPlanningPage> {
                           financialPlans.removeAt(index);
                         });
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Financial plan deleted")),
+                          SnackBar(
+                            content: Text(
+                              "Financial plan deleted",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            backgroundColor: Colors.orange,
+                          ),
                         );
+
                       },
                       background: Container(
                         alignment: Alignment.centerLeft,

@@ -85,7 +85,7 @@ class _LoginPageState extends State<LoginPage> {
     } else {
       // Handle error or validation failures here
       final snackBar = SnackBar(
-        content: Text('Invalid Login Please Retry!',
+        content: Text('Invalid Login Attempt! Please Retry!',
           style: TextStyle(
           fontWeight: FontWeight.bold
         ),),
@@ -212,7 +212,11 @@ class _LoginPageState extends State<LoginPage> {
                       const Text('Not registered yet?'),
                       TextButton(
                         onPressed: () {
-                          Navigator.pushNamed(context, '/registerPage');
+                          Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            '/registerPage',
+                                (route) => false,
+                          );
                         },
                         child: const Text('Create an account'),
                       ),

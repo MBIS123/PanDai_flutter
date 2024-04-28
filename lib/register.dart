@@ -51,18 +51,20 @@ class _RegisterPageState extends State<RegisterPage> {
         SnackBar(
           content: Text('Registration successful!'),
           duration: Duration(seconds: 2),
-          backgroundColor: Colors.lightGreenAccent, // Customizing background color
+          backgroundColor: Colors.lightGreenAccent,
 
         ),
       );
 
       // Navigate to the login page after a short delay
       Future.delayed(Duration(seconds: 2), () {
-        Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => LoginPage(
-            title: widget.title,
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+            const LoginPage(title: 'Login UI'),
           ),
-        ));
+        );
       });
     } else if (response.statusCode == 500) {
       // Handle email already taken error
@@ -70,7 +72,7 @@ class _RegisterPageState extends State<RegisterPage> {
       // Show snackbar with warning message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('The email is already taken.'),
+          content: Text('The email is already taken.', style: TextStyle(fontWeight: FontWeight.bold,),),
           duration: Duration(seconds: 2),
           backgroundColor: Colors.orange, // Customizing background color
         ),
@@ -139,18 +141,19 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   TextFormField(
                     validator: (value) {
-                      EmailValidator.validate(value!)
-                          ? null
-                          : "Please enter a valid email";
-                      if (emailErrorMessage != null) {
-                        return emailErrorMessage;
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your email';
+                      }
+                      if (!EmailValidator.validate(value)) {
+                        return 'Please enter a valid email address';
                       }
                       return null;
                     },
                     onChanged: (value) {
                       if (emailError != null) {
                         setState(() {
-                          emailErrorMessage = null;      });
+                          emailErrorMessage = null;
+                        });
                       }
                     },
                     controller: _emailController,
@@ -172,6 +175,9 @@ class _RegisterPageState extends State<RegisterPage> {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your password';
                       }
+                      if (value.length < 6) {
+                        return 'Password must be at least 6 characters long';
+                      }
                       return null;
                     },
                     controller: _passwordController,
@@ -185,6 +191,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                     ),
                   ),
+
                   const SizedBox(
                     height: 20,
                   ),

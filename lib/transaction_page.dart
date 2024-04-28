@@ -470,7 +470,6 @@ class _TransactionPageState extends State<TransactionPage> {
       DateTime transactionTime) async {
     if (transactionId != null) {
       print('is not null');
-
       // Editing an existing transaction, call updateTransaction
       await _updateTransaction(userId, transactionId, transactionAmount,
           budgetCategory, note, transactionDate, transactionTime);
@@ -696,8 +695,9 @@ class _TransactionPageState extends State<TransactionPage> {
       print('Response: ${response.body}');
       int userId = UserData().userId;
       final snackBar = SnackBar(
-        content: Text('Transaction Recorded!'),
+        content: Text('Transaction Recorded!',  style: TextStyle(fontWeight: FontWeight.bold,),),
         duration: Duration(seconds: 2),
+          backgroundColor: Colors.lightGreenAccent
       );
 
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -778,8 +778,9 @@ class _TransactionPageState extends State<TransactionPage> {
       print('Response: ${response.body}');
       int userId = UserData().userId;
       final snackBar = SnackBar(
-        content: Text('Transaction Updated!'),
+        content: Text('Transaction Updated!', style: TextStyle(fontWeight: FontWeight.bold,),),
         duration: Duration(seconds: 2),
+
       );
 
       ScaffoldMessenger.of(context).showSnackBar(snackBar);

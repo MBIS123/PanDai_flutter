@@ -290,10 +290,8 @@ class _ViewTransactionPageState extends State<ViewTransactionPage> {
       appBar: AppBar(
         title: Row(
           children: [
-            Icon(
-              Icons.history,
-              color: Theme.of(context).colorScheme.primary,
-            ),
+            Icon(Icons.history,
+              color: Theme.of(context).colorScheme.primary,),
             SizedBox(width: 8), // Add spacing between icon and title
             Text(
               widget.title,
@@ -394,9 +392,8 @@ class _ViewTransactionPageState extends State<ViewTransactionPage> {
                             title: Text(transactionHistory[index]
                                 .budgetCategory),
                             subtitle: Text(
-                              'Amount: \$${transactionHistory[index].transactionAmount.toString()} \nDate: ${DateFormat('yyyy-MM-dd').format(transactionHistory[index].transactionDate)}',
+                              'Amount: RM${transactionHistory[index].transactionAmount.toString()} \nDate: ${DateFormat('yyyy-MM-dd').format(transactionHistory[index].transactionDate)}',
                             ),
-
                           ),
                         ),
                       ),
@@ -406,9 +403,7 @@ class _ViewTransactionPageState extends State<ViewTransactionPage> {
               ),
             ],
           ),
-
       ),
-
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.of(context)
@@ -470,13 +465,12 @@ class _TransactionPageState extends State<TransactionPage> {
       DateTime transactionTime) async {
     if (transactionId != null) {
       print('is not null');
-      // Editing an existing transaction, call updateTransaction
       await _updateTransaction(userId, transactionId, transactionAmount,
           budgetCategory, note, transactionDate, transactionTime);
     } else {
       print('came to add new');
-      await _createTransaction(userId, transactionAmount, budgetCategory, note,
-          transactionDate, transactionTime);
+      await _createTransaction( userId, transactionAmount, budgetCategory, note,
+          transactionDate, transactionTime );
     }
     print('no add dao');
   }
@@ -565,7 +559,7 @@ class _TransactionPageState extends State<TransactionPage> {
           ListTile(
             title: Text('Transaction Time'),
             subtitle: Text('${DateFormat('HH:mm').format(_selectedTime)}'),
-            trailing: Icon(Icons.calendar_today),
+            trailing: Icon(Icons.access_time),
             onTap: _showTimePicker,
           ),
           Container(
@@ -618,7 +612,6 @@ class _TransactionPageState extends State<TransactionPage> {
                         _selectedDate,
                         _transactionAmount,
                       );
-
                       print("the add transaction created");
                       Navigator.pop(
                           context); // Navigate back after transaction is successfully saved
@@ -646,18 +639,21 @@ class _TransactionPageState extends State<TransactionPage> {
       String budgetCategory,
       String note,
       DateTime transactionDate,
-      DateTime transactionTime) async {
-    // Validate input fields
+      DateTime transactionTime ) async {
+
     if (transactionAmount == 0.0) {
       _showValidationError('Transaction amount cannot be zero');
       return;
     }
+
     if (budgetCategory == 'Select category') {
       _showValidationError('Please select a category');
       return;
     }
+
     if (note.isEmpty) {
-      _noteHeader = "";
+      _noteHeader = "Note cannot be empty";
+      _showValidationError('Note cannot be empty');
       return;
     }
     if (transactionTime == null) {
@@ -665,9 +661,11 @@ class _TransactionPageState extends State<TransactionPage> {
       return;
     }
 
-    // Proceed with creating the transaction if all validations pass
-    final String apiUrl =
-        'http://10.0.2.2:8080/api/v1/transaction/createTransaction'; // Replace with your actual endpoint URL
+    if( note =="Write note"){
+      note=="-";
+    }
+
+    final String apiUrl = 'http://10.0.2.2:8080/api/v1/transaction/createTransaction';
     print('Creating Transaction');
     final response = await http.post(
       Uri.parse(apiUrl),
@@ -699,7 +697,6 @@ class _TransactionPageState extends State<TransactionPage> {
         duration: Duration(seconds: 2),
           backgroundColor: Colors.lightGreenAccent
       );
-
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
       // Navigate to the home page after a short delay
       Future.delayed(Duration(seconds: 2), () {
@@ -717,6 +714,7 @@ class _TransactionPageState extends State<TransactionPage> {
           'Failed to create transaction. Status code: ${response.statusCode}');
       print('Error response: ${response.body}');
     }
+
   }
 
 
@@ -780,6 +778,8 @@ class _TransactionPageState extends State<TransactionPage> {
       final snackBar = SnackBar(
         content: Text('Transaction Updated!', style: TextStyle(fontWeight: FontWeight.bold,),),
         duration: Duration(seconds: 2),
+          backgroundColor: Colors.lightGreenAccent
+
 
       );
 
@@ -805,6 +805,7 @@ class _TransactionPageState extends State<TransactionPage> {
   }
 
   void _showValidationError(String message) {
+    print("GOT ERROR");
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -823,6 +824,8 @@ class _TransactionPageState extends State<TransactionPage> {
       },
     );
   }
+
+
 
   Future<void> recordBudgetSpent(int userId, String budgetCategory,
       DateTime budgetDate, double budgetSpent) async {

@@ -375,9 +375,8 @@ User's Financial Data: Here's my new financial data, forgot the previous data
   - Upcoming Expenses/Changes: Targeting extra savings of RM$extraTarget per month
 
 Provide an Assessment:
--calculate all expense  by summing all expense data for the same category
--calculate their current monthly surplus (income minus expenses)
-- Keep the assessment concise, within 10 words, and base the timeline estimation strictly on the monthly surplus calculation. Change the \$ to RM. Just say something like You can or cannot arhieve the targeted amount to save in the original timeline
+-calculate their current monthly surplus (monthly income minus monthly expenses)
+- Keep the assessment concise, within 10 words, and base the timeline estimation strictly on the monthly surplus calculation. Change the \$ to RM. Just say something like You can or cannot arhieve the targeted amount to save in the original timeline ( )
 - If the user cannot reach their target within the desired timeline, suggest a new realistic timeline. Just give the response as Adjusted Month: X  , dont provide explanation at all
 """;
 
@@ -487,7 +486,7 @@ Provide an Assessment:
                   "- Achievable Timeline: $achievableMonths\n"
                   "Assess the Plan and Give a Success Score:\n"
                   "- Calculate the monthly surplus by subtracting monthly expenses from monthly income.\n"
-                  "- Score the plan from 1 - 100 in which the score is higher if the Given Timeline is  lower but closer with the Achievable Timeline\n"
+                  "- Score the plan from 1 - 100 in which the score is higher if the Given Timeline is  lower than expected time but closer with the Achievable Timeline\n"
                   "- Set the score to 100 if the GivenTimeline is more than Achievable Timeline\n"
                   " Provide only the score as the response in format of Score:X%, no need give explanation"
             }

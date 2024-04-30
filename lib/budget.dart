@@ -58,8 +58,14 @@ class _MonthSwitcherState extends State<MonthSwitcher> {
         ),
         Text(
           DateFormat('MMMM yyyy').format(currentDate),
-          style: Theme.of(context).textTheme.headline6,
+          style: Theme.of(context).textTheme.headline6?.copyWith(
+            fontWeight: FontWeight.bold,
+            // other properties you want to override
+          ),
         ),
+
+
+
         IconButton(
           icon: const Icon(Icons.arrow_forward_ios),
           onPressed: _nextMonth,
@@ -381,6 +387,7 @@ class _BudgetPageState extends State<BudgetPage> {
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.green,
+                          fontWeight: FontWeight.bold
                       ),
                     ),
                     Text(
@@ -389,6 +396,7 @@ class _BudgetPageState extends State<BudgetPage> {
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.red,
+                          fontWeight: FontWeight.bold
                       ),
                     ),
 
@@ -421,7 +429,7 @@ class _BudgetPageState extends State<BudgetPage> {
                       SizedBox(height: 20),
                       Divider(height: 40, thickness: 2, color: Colors.grey),
 
-                      Text('Unassigned Budget Categories', style: TextStyle(color: Colors.purple, fontSize: 16)),
+                      Text('Unassigned Budget Categories', style: TextStyle(color: Colors.orangeAccent, fontSize: 16,fontWeight: FontWeight.bold)),
                       SizedBox(height: 20),
                       budgetCategoryItem(matchingBudget, category),
                     ],
@@ -454,18 +462,18 @@ class _BudgetPageState extends State<BudgetPage> {
                   text: TextSpan(
                     style: TextStyle(fontSize: 14.0, color: Colors.white),
                     children: [
-                      TextSpan(text: 'Limit: \$${matchingBudget.budgetLimit.toStringAsFixed(2)}\n'),
-                      TextSpan(text: 'Spent: \$${matchingBudget.budgetSpent.toStringAsFixed(2)}', style: TextStyle(color: Colors.red)),
+                      TextSpan(text: 'Limit: \$${matchingBudget.budgetLimit.toStringAsFixed(2)}\n' ,style: TextStyle(fontWeight: FontWeight.bold)),
+                      TextSpan(text: 'Spent: \$${matchingBudget.budgetSpent.toStringAsFixed(2)}', style: TextStyle(color: Colors.red,fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
                 if (matchingBudget.budgetSpent > matchingBudget.budgetLimit)
-                  Text('Overspent', style: TextStyle(color: Colors.red, fontSize: 12)),
+                  Text('Overspent', style: TextStyle(color: Colors.red, fontSize: 12,fontWeight: FontWeight.bold)),
               ],
-            ) : Text('No budget set'),
+            ) : Text('No budget set' , style: TextStyle(fontWeight: FontWeight.bold),),
             trailing: ElevatedButton(
               onPressed: () => showSetBudgetDialog(context, category),
-              child: Text('Set Budget'),
+              child: Text('Set Budget', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ),
           Padding(

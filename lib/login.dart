@@ -25,6 +25,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final storage = FlutterSecureStorage();
+  bool _obscureText = false;
 
   @override
   void initState() {
@@ -127,6 +128,7 @@ class _LoginPageState extends State<LoginPage> {
               key: _formKey,
               child: Column(
                 children: [
+
                   TextFormField(
                     validator: (value) {
                       if (EmailValidator.validate(value!)) {
@@ -151,6 +153,7 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(
                     height: 20,
                   ),
+
                   TextFormField(
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -160,15 +163,29 @@ class _LoginPageState extends State<LoginPage> {
                     },
                     maxLines: 1,
                     controller: _passwordController,
-                    obscureText: true,
+                    obscureText: _obscureText, // Use _obscureText directly
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.lock),
+                      suffixIcon: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _obscureText = !_obscureText; // Toggle the state of _obscureText
+                          });
+                        },
+                        child: Icon(
+                          _obscureText ? Icons.visibility_off : Icons.visibility, // Correct the icons based on _obscureText
+                          color: Colors.white,
+                        ),
+                      ),
                       hintText: 'Enter your password',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                   ),
+
+
+
                   CheckboxListTile(
                     title: const Text("Remember me"),
                     contentPadding: EdgeInsets.zero,

@@ -5,6 +5,7 @@ class Income {
   Income({
     required this.incomeType,
     required this.amount,
+    //test
   });
 
   factory Income.fromJson(Map<String, dynamic> json) {

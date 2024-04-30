@@ -184,7 +184,6 @@ class _SmartPlanningPageState extends State<SmartPlanningPage> {
                             backgroundColor: Colors.orange,
                           ),
                         );
-
                       },
                       background: Container(
                         alignment: Alignment.centerLeft,
@@ -196,6 +195,21 @@ class _SmartPlanningPageState extends State<SmartPlanningPage> {
                         onTap: () {
                           if (financialPlans[index].financialAdjustment ==
                               "None") {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => TempAdviceScratch(
+                                  assessment: financialPlans[index].assessment,
+                                  financialAdvice:
+                                      financialPlans[index].financialAdvice,
+                                  successbilityScore:
+                                      financialPlans[index].successScore,
+                                ),
+                              ),
+                            ).then((_) {
+                              _fetchFinancialPlan(); // Call _fetchFinancialPlan() after TempAdvice page is popped
+                            });
+                          } else {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -212,21 +226,6 @@ class _SmartPlanningPageState extends State<SmartPlanningPage> {
                             ).then((_) {
                               _fetchFinancialPlan(); // Call _fetchFinancialPlan() after TempAdvice page is popped
                             });
-                          } else {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => TempAdviceScratch(
-                                  assessment: financialPlans[index].assessment,
-                                  financialAdvice:
-                                      financialPlans[index].financialAdvice,
-                                  successbilityScore:
-                                      financialPlans[index].successScore,
-                                ),
-                              ),
-                            ).then((_) {
-                              _fetchFinancialPlan(); // Call _fetchFinancialPlan() after TempAdvice page is popped
-                            });
                           }
                         },
                         child: Card(
@@ -234,7 +233,7 @@ class _SmartPlanningPageState extends State<SmartPlanningPage> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10.0),
                           ),
-                          color: Color(0xff4b4848),
+                          color: Color(0xff1f1e1e),
                           child: ListTile(
                             title: Text(
                               financialPlans[index].planName,
@@ -249,13 +248,12 @@ class _SmartPlanningPageState extends State<SmartPlanningPage> {
                                 SizedBox(height: 8),
                                 Row(
                                   children: [
-                                    Icon(Icons.monetization_on,
-                                        color: Colors.white),
+                                    Icon(Icons.monetization_on, color: Colors.green), // Icon color
                                     SizedBox(width: 8),
                                     Text(
                                       'Saving Target: \$${financialPlans[index].targetAmount.toString()}',
                                       style: TextStyle(
-                                          color: Colors.white,
+                                          color: Colors.green, // Text color
                                           fontWeight: FontWeight.bold,
                                           fontSize: 16),
                                     ),
@@ -264,13 +262,12 @@ class _SmartPlanningPageState extends State<SmartPlanningPage> {
                                 SizedBox(height: 8),
                                 Row(
                                   children: [
-                                    Icon(Icons.calendar_today,
-                                        color: Colors.white),
+                                    Icon(Icons.calendar_today, color: Colors.blue), // Icon color
                                     SizedBox(width: 8),
                                     Text(
                                       'Creation Date: ${DateFormat('yyyy-MM-dd').format(financialPlans[index].createPlanDate)}',
                                       style: TextStyle(
-                                          color: Colors.white,
+                                          color: Colors.blue, // Text color
                                           fontWeight: FontWeight.bold,
                                           fontSize: 16),
                                     ),
@@ -279,12 +276,12 @@ class _SmartPlanningPageState extends State<SmartPlanningPage> {
                                 SizedBox(height: 8),
                                 Row(
                                   children: [
-                                    Icon(Icons.assessment, color: Colors.white),
+                                    Icon(Icons.assessment, color: Colors.orange), // Icon color
                                     SizedBox(width: 8),
                                     Text(
                                       'Success Rate: ${financialPlans[index].successScore.toString()}',
                                       style: TextStyle(
-                                          color: Colors.white,
+                                          color: Colors.orange, // Text color
                                           fontWeight: FontWeight.bold,
                                           fontSize: 16),
                                     ),
@@ -310,16 +307,16 @@ class _SmartPlanningPageState extends State<SmartPlanningPage> {
                     onPressed: () {
                       // Use current account data logic
                       Navigator.of(context).pop();
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => CustomizedSavingPlan(
-                                title: 'Customized Financial Plan',
-                                userId: widget.userId,
-                              ))
-
-                      ).then((_) {
+                      Navigator.of(context)
+                          .push(MaterialPageRoute(
+                              builder: (context) => CustomizedSavingPlan(
+                                    title: 'Customized Financial Plan',
+                                    userId: widget.userId,
+                                  )))
+                          .then((_) {
                         _fetchFinancialPlan();
                       });
-                      },
+                    },
                     child: Text('Current Account Data'),
                   ),
                   TextButton(

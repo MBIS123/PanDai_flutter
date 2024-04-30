@@ -195,7 +195,7 @@ class _HomePageState extends State<HomePage> {
                                           color: Colors.primaries[categorySpending.keys.toList().indexOf(category) % Colors.primaries.length],
                                           value: value,
                                           radius: 50, // You might want to adjust this if the chart has many sections or the sections are still too large
-                                          title: '${value.toStringAsFixed(1)}%',
+                                          title: '${value.toStringAsFixed(1)}',
                                           titleStyle: TextStyle(
                                             fontSize: 12,
                                             fontWeight: FontWeight.bold,

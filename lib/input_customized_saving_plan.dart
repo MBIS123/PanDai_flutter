@@ -49,7 +49,7 @@ class _CustomizedSavingPlanState  extends State<CustomizedSavingPlan> {
   void initState() {
     super.initState();
     _fetchIncomeData();
-    _fetchBudgetData();
+    _fetchTransactionData();
     _fetchTransactionInfo();
   }
 
@@ -122,6 +122,38 @@ class _CustomizedSavingPlanState  extends State<CustomizedSavingPlan> {
         });
       } else {
         throw Exception('Failed to load budget data with status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching data: $e');
+    }
+  }
+
+
+  Future<void> _fetchTransactionData() async {
+    final String apiUrl =
+        'http://10.0.2.2:8080/api/v1/transaction/getTransactionInfoByCategory';
+    try {
+      final response = await http.get(
+        Uri.parse('$apiUrl?userId=${widget.userId}'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      );
+      if (response.statusCode == 200) {
+        String responseBody = response.body;
+        List<dynamic> jsonResponse = jsonDecode(responseBody);
+        print("The jsonResponse is:" + jsonResponse.toString());
+        double _totalBudgetSpent = 0;
+
+        for (var data in jsonResponse) {
+          double transactionAmount = (data['transactionAmount'] ?? 0).toDouble();
+          totalBudgetSpent += transactionAmount;
+        }
+
+
+      } else {
+        throw Exception(
+            'Failed to load transaction data with status code: ${response.statusCode}');
       }
     } catch (e) {
       print('Error fetching data: $e');
@@ -532,7 +564,6 @@ class _CustomizedSavingPlanState  extends State<CustomizedSavingPlan> {
                             );
                           },
                         );
-
                         // Perform async tasks
                         await createAssesmentResponse();
                         await createFinancialAdvice();
@@ -541,14 +572,12 @@ class _CustomizedSavingPlanState  extends State<CustomizedSavingPlan> {
                         await _createFinancialPlan(widget.userId, _amount, _purpose, successScore,
                             assessment, financialAdvice, adjustBudgetExpenseAdvice
                             ,DateTime.now());
-
-
                         Navigator.of(context).pop(); // Dismiss the dialog
-                        Navigator.of(context).push(MaterialPageRoute(builder: (context) => TempAdvice(financialAdvice: financialAdvice ,
+                        Navigator.of(context).push(MaterialPageRoute(builder: (context) =>
+                            TempAdvice(financialAdvice: financialAdvice ,
                           assessment: assessment,
                           successbilityScore: successScore,
                         budgetExpenseAdjustment: adjustBudgetExpenseAdvice,))
-
                         ).then((_){
                           _resetForm();
                         });

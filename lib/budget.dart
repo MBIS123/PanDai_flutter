@@ -134,7 +134,7 @@ class _BudgetPageState extends State<BudgetPage> {
         TextEditingController _budgetController = TextEditingController();
         String formattedDate = getFormattedDate(); // Call the method here
         return AlertDialog(
-          title: Text('Create Budget'),
+          title: Text('Set Budget'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[

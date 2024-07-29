@@ -177,12 +177,15 @@ class _ProfilePageState extends State<ProfilePage> {
 
         setState(() {
           totalBudget = totalBudgetSpent;
-          if (totalBudget > income) {
-            financialStatus = "Unhealthy";
-          } else {
+          double savingsRate = (income - totalBudget) / income;
+          // Determine financial status based on the savings rate
+          if (savingsRate > 0.20) {
             financialStatus = "Healthy";
+          } else {
+            financialStatus = "Unhealthy";
           }
         });
+
       } else {
         throw Exception(
             'Failed to load transaction data with status code: ${response.statusCode}');

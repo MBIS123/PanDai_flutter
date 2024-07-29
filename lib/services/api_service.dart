@@ -379,8 +379,6 @@ Provide an Assessment:
 - Keep the assessment concise, within 10 words, and base the timeline estimation strictly on the monthly surplus calculation. Change the \$ to RM. Just say something like You can or cannot arhieve the targeted amount to save in the original timeline ( )
 - If the user cannot reach their target within the desired timeline, suggest a new realistic timeline. Just give the response as Adjusted Month: X  , dont provide explanation at all
 """;
-
-
     print("The content is:" + content);
     try {
       final response = await http.post(

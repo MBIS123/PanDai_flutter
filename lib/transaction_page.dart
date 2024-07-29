@@ -747,7 +747,8 @@ class _TransactionPageState extends State<TransactionPage> {
 
     // Proceed with updating the transaction if all validations pass
     final String apiUrl =
-        'http://10.0.2.2:8080/api/v1/transaction/updateTransaction'; // Replace with your actual endpoint URL
+        'http://10.0.2.2:8080/api/v1/transaction/updateTransaction';
+    // Replace with your actual endpoint URL
     print('Updating Transaction');
     final response = await http.put(
       Uri.parse(apiUrl),
@@ -765,7 +766,6 @@ class _TransactionPageState extends State<TransactionPage> {
         // Ensure backend accepts ISO 8601 string format
       }),
     );
-
     if (response.statusCode == 200 || response.statusCode == 201) {
       // Handle a successful response here
       print("the note is:" + note);
@@ -779,8 +779,6 @@ class _TransactionPageState extends State<TransactionPage> {
         content: Text('Transaction Updated!', style: TextStyle(fontWeight: FontWeight.bold,),),
         duration: Duration(seconds: 2),
           backgroundColor: Colors.lightGreenAccent
-
-
       );
 
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
